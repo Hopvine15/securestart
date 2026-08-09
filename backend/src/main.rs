@@ -1,3 +1,6 @@
+mod auth;
+mod routes;
+
 use axum::{
     http::{header::AUTHORIZATION, HeaderValue, Method},
     routing::get,
@@ -31,7 +34,7 @@ async fn main() {
 
     let app = Router::new()
         .route("/health", get(|| async { "ok" }))
-        .route("/api/auth-test", get(|| async { "ok" }))
+        .route("/api/auth-test", get(routes::auth_test::auth_test))
         .layer(cors);
 
     let listener = tokio::net::TcpListener::bind(addr)

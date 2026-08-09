@@ -13,7 +13,11 @@ function Dashboard() {
 
   const testApi = async () => {
     try {
-      const token = await getAccessTokenSilently();
+      const token = await getAccessTokenSilently({
+        authorizationParams: {
+          audience: import.meta.env.VITE_AUTH0_AUDIENCE,
+        },
+      });
 
       const response = await fetch(
         `${import.meta.env.VITE_API_URL}/api/auth-test`,
