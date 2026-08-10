@@ -3,7 +3,6 @@ use axum::{
     http::{HeaderValue, Method, header::AUTHORIZATION},
     routing::get,
 };
-use mongodb::Client;
 use std::net::SocketAddr;
 use tower_http::cors::CorsLayer;
 
@@ -15,7 +14,7 @@ mod routes;
 
 #[derive(Clone)]
 pub struct AppState {
-    pub mongo: Client,
+    pub users: repositories::user_repository::MongoUserRepository,
 }
 
 #[tokio::main]
@@ -32,7 +31,9 @@ async fn main() {
     let mongo = database::create_client(&mongodb_uri).await;
     database::setup_indexes(&mongo).await;
 
-    let state = AppState { mongo };
+    let state = AppState {
+        users: repositories::user_repository::MongoUserRepository::new(mongo),
+    };
 
     let addr: SocketAddr = format!("0.0.0.0:{port}").parse().expect("valid address");
 
