@@ -1,49 +1,61 @@
-mod auth;
-mod routes;
-
-use axum::{
-    http::{header::AUTHORIZATION, HeaderValue, Method},
-    routing::get,
-    Router,
-};
+use axum::{ http::{ header::AUTHORIZATION, HeaderValue, Method }, routing::get, Router };
+use mongodb::{ bson::doc, Client };
 use std::net::SocketAddr;
 use tower_http::cors::CorsLayer;
+
+mod auth;
+mod models;
+mod routes;
+
+#[derive(Clone)]
+pub struct AppState {
+    pub mongo: Client,
+}
 
 #[tokio::main]
 async fn main() {
     dotenvy::dotenv().ok();
 
-    let port = std::env::var("PORT")
-        .unwrap_or_else(|_| "8080".to_string());
+    let port = std::env::var("PORT").unwrap_or_else(|_| "8080".to_string());
 
-    let cors_origin = std::env::var("CORS_ORIGIN")
+    let cors_origin = std::env
+        ::var("CORS_ORIGIN")
         .unwrap_or_else(|_| "http://localhost:5173".to_string());
 
-    let addr: SocketAddr = format!("0.0.0.0:{port}")
-        .parse()
-        .expect("valid address");
+    let mongodb_uri = std::env::var("MONGODB_URI").expect("MONGODB_URI must be set");
+
+    let mongo = Client::with_uri_str(&mongodb_uri).await.expect("failed to create MongoDB client");
+
+    mongo
+        .database("admin")
+        .run_command(doc! { "ping": 1 }).await
+        .expect("failed to connect to MongoDB");
+
+    println!("Connected to MongoDB");
+
+    let state = AppState {
+        mongo,
+    };
+
+    let addr: SocketAddr = format!("0.0.0.0:{port}").parse().expect("valid address");
 
     let cors = CorsLayer::new()
-        .allow_origin(
-            cors_origin
-                .parse::<HeaderValue>()
-                .expect("valid CORS origin"),
-        )
+        .allow_origin(cors_origin.parse::<HeaderValue>().expect("valid CORS origin"))
         .allow_methods([Method::GET])
         .allow_headers([AUTHORIZATION]);
 
     let app = Router::new()
-        .route("/health", get(|| async { "ok" }))
+        .route(
+            "/health",
+            get(|| async { "ok" })
+        )
         .route("/api/auth-test", get(routes::auth_test::auth_test))
-        .layer(cors);
+        .layer(cors)
+        .with_state(state);
 
-    let listener = tokio::net::TcpListener::bind(addr)
-        .await
-        .expect("failed to bind");
+    let listener = tokio::net::TcpListener::bind(addr).await.expect("failed to bind");
 
     println!("backend listening on {addr}");
 
-    axum::serve(listener, app)
-        .await
-        .expect("server error");
+    axum::serve(listener, app).await.expect("server error");
 }
