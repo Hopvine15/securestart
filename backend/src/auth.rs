@@ -1,28 +1,36 @@
 // Auth0 JWT verification
 use axum::{
     extract::FromRequestParts,
-    http::{ header::AUTHORIZATION, request::Parts, StatusCode },
+    http::{StatusCode, header::AUTHORIZATION, request::Parts},
 };
 
-use jsonwebtoken::{ decode, decode_header, jwk::JwkSet, Algorithm, DecodingKey, Validation };
+use jsonwebtoken::{Algorithm, DecodingKey, Validation, decode, decode_header, jwk::JwkSet};
 use serde::Deserialize;
 
 #[derive(Debug)]
 pub struct AuthenticatedUser {
     pub sub: String,
+    pub email: String,
 }
 
 #[derive(Debug, Deserialize)]
 struct Claims {
     sub: String,
+    #[serde(rename = "https://securestart.app/email")]
+    email: String,
+    #[allow(dead_code)]
     exp: usize,
 }
 
-impl<S> FromRequestParts<S> for AuthenticatedUser where S: Send + Sync {
+impl<S> FromRequestParts<S> for AuthenticatedUser
+where
+    S: Send + Sync,
+{
     type Rejection = (StatusCode, &'static str);
 
     async fn from_request_parts(parts: &mut Parts, _state: &S) -> Result<Self, Self::Rejection> {
-        let auth_header = parts.headers
+        let auth_header = parts
+            .headers
             .get(AUTHORIZATION)
             .and_then(|header| header.to_str().ok())
             .ok_or((StatusCode::UNAUTHORIZED, "Missing Authorization header"))?;
@@ -72,5 +80,6 @@ async fn verify_token(token: &str) -> Result<AuthenticatedUser, Box<dyn std::err
 
     Ok(AuthenticatedUser {
         sub: token_data.claims.sub,
+        email: token_data.claims.email,
     })
 }
