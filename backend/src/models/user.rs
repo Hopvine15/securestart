@@ -1,0 +1,12 @@
+use mongodb::bson::{DateTime, oid::ObjectId};
+use serde::{Deserialize, Serialize};
+
+#[derive(Clone, Debug, Serialize, Deserialize)]
+pub struct User {
+    #[serde(rename = "_id", skip_serializing_if = "Option::is_none")]
+    pub id: Option<ObjectId>,
+
+    pub auth0_sub: String,
+    pub email: String,
+    pub created_at: DateTime,
+}
