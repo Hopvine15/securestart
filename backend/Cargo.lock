@@ -150,6 +150,7 @@ dependencies = [
  "serde",
  "serde_json",
  "tokio",
+ "tower",
  "tower-http 0.7.0",
  "utoipa",
  "utoipa-swagger-ui",
