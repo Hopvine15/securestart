@@ -6,6 +6,17 @@ use crate::{
     repositories::user_repository::{self, UserProvisioning},
 };
 
+#[utoipa::path(
+    get,
+    path = "/api/auth-test",
+    tag = "Authentication",
+    security(("bearer_auth" = [])),
+    responses(
+        (status = 200, description = "Authenticated user was provisioned", body = String),
+        (status = 401, description = "Missing or invalid bearer token"),
+        (status = 500, description = "Database error")
+    )
+)]
 pub async fn auth_test(
     State(state): State<AppState>,
     user: AuthenticatedUser,
