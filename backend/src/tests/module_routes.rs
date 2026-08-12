@@ -1,4 +1,7 @@
-use std::sync::{Arc, atomic::{AtomicUsize, Ordering}};
+use std::sync::{
+    Arc,
+    atomic::{AtomicUsize, Ordering},
+};
 
 use axum::{
     Router,
@@ -155,6 +158,95 @@ async fn repository_failures_are_sanitised() {
 
     assert_eq!(response.status(), StatusCode::INTERNAL_SERVER_ERROR);
     assert_eq!(repository.find_all_call_count(), 1);
+
+    let body = axum::body::to_bytes(response.into_body(), usize::MAX)
+        .await
+        .expect("response body");
+    assert_eq!(&body[..], b"Database error");
+}
+
+// RED checkpoint for GET /api/modules/:id. The production router intentionally
+// does not register this endpoint yet, so these tests describe the contract
+// before its handler and repository lookup are implemented.
+#[tokio::test]
+async fn authenticated_request_for_an_existing_module_returns_that_module() {
+    let repository = Arc::new(InMemoryModuleRepository::with_modules(modules()));
+    let response = app_under_test(repository)
+        .await
+        .oneshot(
+            Request::builder()
+                .uri("/api/modules/ai-phishing")
+                .header(header::AUTHORIZATION, "Bearer valid-test-token")
+                .body(Body::empty())
+                .expect("valid request"),
+        )
+        .await
+        .expect("router response");
+
+    assert_eq!(response.status(), StatusCode::OK);
+
+    let body = axum::body::to_bytes(response.into_body(), usize::MAX)
+        .await
+        .expect("response body");
+    let module: TrainingModule =
+        serde_json::from_slice(&body).expect("single module JSON response");
+
+    assert_eq!(module.id, "ai-phishing");
+    assert_eq!(module.title, "AI Phishing Risks");
+}
+
+#[tokio::test]
+async fn authenticated_request_for_an_unknown_module_returns_not_found() {
+    let repository = Arc::new(InMemoryModuleRepository::with_modules(modules()));
+    let response = app_under_test(repository)
+        .await
+        .oneshot(
+            Request::builder()
+                .uri("/api/modules/unknown-module")
+                .header(header::AUTHORIZATION, "Bearer valid-test-token")
+                .body(Body::empty())
+                .expect("valid request"),
+        )
+        .await
+        .expect("router response");
+
+    assert_eq!(response.status(), StatusCode::NOT_FOUND);
+}
+
+#[tokio::test]
+async fn unauthenticated_request_for_a_module_is_rejected_before_module_lookup() {
+    let repository = Arc::new(InMemoryModuleRepository::with_modules(modules()));
+    let response = app_under_test(repository.clone())
+        .await
+        .oneshot(
+            Request::builder()
+                .uri("/api/modules/ai-phishing")
+                .body(Body::empty())
+                .expect("valid request"),
+        )
+        .await
+        .expect("router response");
+
+    assert_eq!(response.status(), StatusCode::UNAUTHORIZED);
+    assert_eq!(repository.find_all_call_count(), 0);
+}
+
+#[tokio::test]
+async fn module_lookup_failures_are_sanitised() {
+    let repository = Arc::new(InMemoryModuleRepository::failing());
+    let response = app_under_test(repository)
+        .await
+        .oneshot(
+            Request::builder()
+                .uri("/api/modules/ai-phishing")
+                .header(header::AUTHORIZATION, "Bearer valid-test-token")
+                .body(Body::empty())
+                .expect("valid request"),
+        )
+        .await
+        .expect("router response");
+
+    assert_eq!(response.status(), StatusCode::INTERNAL_SERVER_ERROR);
 
     let body = axum::body::to_bytes(response.into_body(), usize::MAX)
         .await
