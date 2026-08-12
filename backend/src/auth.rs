@@ -50,6 +50,14 @@ where
 }
 
 async fn verify_token(token: &str) -> Result<AuthenticatedUser, Box<dyn std::error::Error>> {
+    #[cfg(test)]
+    if token == "valid-test-token" {
+        return Ok(AuthenticatedUser {
+            sub: "auth0|test-user".to_string(),
+            email: "test@example.com".to_string(),
+        });
+    }
+
     let domain = std::env::var("AUTH0_DOMAIN")?;
     let audience = std::env::var("AUTH0_AUDIENCE")?;
 
