@@ -326,6 +326,19 @@ cp frontend/.env.example frontend/.env
 
 Real `.env` files are ignored by Git; only the example templates are committed.
 
+### Seed training modules
+
+After configuring `backend/.env`, seed the initial cybersecurity modules explicitly:
+
+```bash
+cd backend
+cargo run --bin seed_modules
+```
+
+The command upserts the four MVP modules by their application-facing `id`, so it
+can be run again to update the same records without creating duplicates. It does
+not run when the API starts.
+
 ### `backend/.env.example`
 
 ```dotenv

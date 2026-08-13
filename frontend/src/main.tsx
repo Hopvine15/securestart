@@ -3,6 +3,7 @@ import { createRoot } from "react-dom/client";
 import { Auth0Provider } from "@auth0/auth0-react";
 import { BrowserRouter, useNavigate } from "react-router-dom";
 import App from "./App";
+import "./index.css";
 
 function Auth0ProviderWithNavigate() {
   const navigate = useNavigate();

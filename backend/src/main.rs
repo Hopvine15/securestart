@@ -3,8 +3,16 @@ use axum::{
     http::{HeaderValue, Method, header::AUTHORIZATION},
     routing::get,
 };
-use std::net::SocketAddr;
+use std::{net::SocketAddr, sync::Arc};
 use tower_http::cors::CorsLayer;
+use utoipa::{
+    Modify, OpenApi,
+    openapi::{
+        Components,
+        security::{Http, HttpAuthScheme, SecurityScheme},
+    },
+};
+use utoipa_swagger_ui::SwaggerUi;
 
 mod auth;
 mod database;
@@ -12,9 +20,43 @@ mod models;
 mod repositories;
 mod routes;
 
+#[cfg(test)]
+mod tests;
+
 #[derive(Clone)]
 pub struct AppState {
     pub users: repositories::user_repository::MongoUserRepository,
+    pub modules: Arc<dyn repositories::module_repository::ModuleRepository>,
+}
+
+/// The OpenAPI contract exposed at `/api-docs/openapi.json`.
+#[derive(OpenApi)]
+#[openapi(
+    paths(
+        routes::auth_test::auth_test,
+        routes::modules::get_modules,
+        routes::modules::get_module_by_id
+    ),
+    tags(
+        (name = "Authentication", description = "Endpoints that require an Auth0 bearer token"),
+        (name = "Training Modules", description = "Available cybersecurity training modules")
+    ),
+    modifiers(&SecurityAddon)
+)]
+struct ApiDoc;
+
+struct SecurityAddon;
+
+impl Modify for SecurityAddon {
+    fn modify(&self, openapi: &mut utoipa::openapi::OpenApi) {
+        openapi
+            .components
+            .get_or_insert_with(Components::new)
+            .add_security_scheme(
+                "bearer_auth",
+                SecurityScheme::Http(Http::new(HttpAuthScheme::Bearer)),
+            );
+    }
 }
 
 #[tokio::main]
@@ -32,7 +74,10 @@ async fn main() {
     database::setup_indexes(&mongo).await;
 
     let state = AppState {
-        users: repositories::user_repository::MongoUserRepository::new(mongo),
+        users: repositories::user_repository::MongoUserRepository::new(mongo.clone()),
+        modules: Arc::new(repositories::module_repository::MongoModuleRepository::new(
+            mongo,
+        )),
     };
 
     let addr: SocketAddr = format!("0.0.0.0:{port}").parse().expect("valid address");
@@ -49,6 +94,9 @@ async fn main() {
     let app = Router::new()
         .route("/health", get(|| async { "ok" }))
         .route("/api/auth-test", get(routes::auth_test::auth_test))
+        .route("/api/modules", get(routes::modules::get_modules))
+        .route("/api/modules/{id}", get(routes::modules::get_module_by_id))
+        .merge(SwaggerUi::new("/swagger-ui").url("/api-docs/openapi.json", ApiDoc::openapi()))
         .layer(cors)
         .with_state(state);
 
