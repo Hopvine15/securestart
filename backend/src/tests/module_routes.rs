@@ -15,13 +15,14 @@ use crate::{
     AppState,
     models::training_module::TrainingModule,
     repositories::{module_repository::ModuleRepository, user_repository::MongoUserRepository},
-    routes::modules::get_modules,
+    routes::modules::{get_module_by_id, get_modules},
 };
 
 /// Route-test double for the module repository dependency
 struct InMemoryModuleRepository {
     modules: Vec<TrainingModule>,
     find_all_calls: AtomicUsize,
+    find_by_id_calls: AtomicUsize,
     failure: Option<String>,
 }
 
@@ -30,6 +31,7 @@ impl InMemoryModuleRepository {
         Self {
             modules,
             find_all_calls: AtomicUsize::new(0),
+            find_by_id_calls: AtomicUsize::new(0),
             failure: None,
         }
     }
@@ -38,12 +40,17 @@ impl InMemoryModuleRepository {
         Self {
             modules: Vec::new(),
             find_all_calls: AtomicUsize::new(0),
+            find_by_id_calls: AtomicUsize::new(0),
             failure: Some("MongoDB connection refused".to_string()),
         }
     }
 
     fn find_all_call_count(&self) -> usize {
         self.find_all_calls.load(Ordering::SeqCst)
+    }
+
+    fn find_by_id_call_count(&self) -> usize {
+        self.find_by_id_calls.load(Ordering::SeqCst)
     }
 }
 
@@ -54,6 +61,14 @@ impl ModuleRepository for InMemoryModuleRepository {
         match &self.failure {
             Some(error) => Err(error.clone()),
             None => Ok(self.modules.clone()),
+        }
+    }
+
+    async fn find_by_id(&self, id: &str) -> Result<Option<TrainingModule>, String> {
+        self.find_by_id_calls.fetch_add(1, Ordering::SeqCst);
+        match &self.failure {
+            Some(error) => Err(error.clone()),
+            None => Ok(self.modules.iter().find(|module| module.id == id).cloned()),
         }
     }
 }
@@ -86,6 +101,7 @@ async fn app_under_test(modules: Arc<dyn ModuleRepository>) -> Router {
 
     Router::new()
         .route("/api/modules", get(get_modules))
+        .route("/api/modules/{id}", get(get_module_by_id))
         .with_state(state)
 }
 
@@ -171,7 +187,7 @@ async fn repository_failures_are_sanitised() {
 #[tokio::test]
 async fn authenticated_request_for_an_existing_module_returns_that_module() {
     let repository = Arc::new(InMemoryModuleRepository::with_modules(modules()));
-    let response = app_under_test(repository)
+    let response = app_under_test(repository.clone())
         .await
         .oneshot(
             Request::builder()
@@ -193,12 +209,13 @@ async fn authenticated_request_for_an_existing_module_returns_that_module() {
 
     assert_eq!(module.id, "ai-phishing");
     assert_eq!(module.title, "AI Phishing Risks");
+    assert_eq!(repository.find_by_id_call_count(), 1);
 }
 
 #[tokio::test]
 async fn authenticated_request_for_an_unknown_module_returns_not_found() {
     let repository = Arc::new(InMemoryModuleRepository::with_modules(modules()));
-    let response = app_under_test(repository)
+    let response = app_under_test(repository.clone())
         .await
         .oneshot(
             Request::builder()
@@ -211,6 +228,7 @@ async fn authenticated_request_for_an_unknown_module_returns_not_found() {
         .expect("router response");
 
     assert_eq!(response.status(), StatusCode::NOT_FOUND);
+    assert_eq!(repository.find_by_id_call_count(), 1);
 }
 
 #[tokio::test]
@@ -229,12 +247,13 @@ async fn unauthenticated_request_for_a_module_is_rejected_before_module_lookup()
 
     assert_eq!(response.status(), StatusCode::UNAUTHORIZED);
     assert_eq!(repository.find_all_call_count(), 0);
+    assert_eq!(repository.find_by_id_call_count(), 0);
 }
 
 #[tokio::test]
 async fn module_lookup_failures_are_sanitised() {
     let repository = Arc::new(InMemoryModuleRepository::failing());
-    let response = app_under_test(repository)
+    let response = app_under_test(repository.clone())
         .await
         .oneshot(
             Request::builder()
@@ -247,6 +266,7 @@ async fn module_lookup_failures_are_sanitised() {
         .expect("router response");
 
     assert_eq!(response.status(), StatusCode::INTERNAL_SERVER_ERROR);
+    assert_eq!(repository.find_by_id_call_count(), 1);
 
     let body = axum::body::to_bytes(response.into_body(), usize::MAX)
         .await

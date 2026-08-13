@@ -1,10 +1,16 @@
-use axum::{ Router, http::{ HeaderValue, Method, header::AUTHORIZATION }, routing::get };
-use std::{ net::SocketAddr, sync::Arc };
+use axum::{
+    Router,
+    http::{HeaderValue, Method, header::AUTHORIZATION},
+    routing::get,
+};
+use std::{net::SocketAddr, sync::Arc};
 use tower_http::cors::CorsLayer;
 use utoipa::{
-    Modify,
-    OpenApi,
-    openapi::{ Components, security::{ Http, HttpAuthScheme, SecurityScheme } },
+    Modify, OpenApi,
+    openapi::{
+        Components,
+        security::{Http, HttpAuthScheme, SecurityScheme},
+    },
 };
 use utoipa_swagger_ui::SwaggerUi;
 
@@ -26,7 +32,11 @@ pub struct AppState {
 /// The OpenAPI contract exposed at `/api-docs/openapi.json`.
 #[derive(OpenApi)]
 #[openapi(
-    paths(routes::auth_test::auth_test, routes::modules::get_modules),
+    paths(
+        routes::auth_test::auth_test,
+        routes::modules::get_modules,
+        routes::modules::get_module_by_id
+    ),
     tags(
         (name = "Authentication", description = "Endpoints that require an Auth0 bearer token"),
         (name = "Training Modules", description = "Available cybersecurity training modules")
@@ -39,11 +49,12 @@ struct SecurityAddon;
 
 impl Modify for SecurityAddon {
     fn modify(&self, openapi: &mut utoipa::openapi::OpenApi) {
-        openapi.components
+        openapi
+            .components
             .get_or_insert_with(Components::new)
             .add_security_scheme(
                 "bearer_auth",
-                SecurityScheme::Http(Http::new(HttpAuthScheme::Bearer))
+                SecurityScheme::Http(Http::new(HttpAuthScheme::Bearer)),
             );
     }
 }
@@ -54,9 +65,8 @@ async fn main() {
 
     let port = std::env::var("PORT").unwrap_or_else(|_| "8080".to_string());
 
-    let cors_origin = std::env
-        ::var("CORS_ORIGIN")
-        .unwrap_or_else(|_| "http://localhost:5173".to_string());
+    let cors_origin =
+        std::env::var("CORS_ORIGIN").unwrap_or_else(|_| "http://localhost:5173".to_string());
 
     let mongodb_uri = std::env::var("MONGODB_URI").expect("MONGODB_URI must be set");
 
@@ -65,28 +75,34 @@ async fn main() {
 
     let state = AppState {
         users: repositories::user_repository::MongoUserRepository::new(mongo.clone()),
-        modules: Arc::new(repositories::module_repository::MongoModuleRepository::new(mongo)),
+        modules: Arc::new(repositories::module_repository::MongoModuleRepository::new(
+            mongo,
+        )),
     };
 
     let addr: SocketAddr = format!("0.0.0.0:{port}").parse().expect("valid address");
 
     let cors = CorsLayer::new()
-        .allow_origin(cors_origin.parse::<HeaderValue>().expect("valid CORS origin"))
+        .allow_origin(
+            cors_origin
+                .parse::<HeaderValue>()
+                .expect("valid CORS origin"),
+        )
         .allow_methods([Method::GET])
         .allow_headers([AUTHORIZATION]);
 
     let app = Router::new()
-        .route(
-            "/health",
-            get(|| async { "ok" })
-        )
+        .route("/health", get(|| async { "ok" }))
         .route("/api/auth-test", get(routes::auth_test::auth_test))
         .route("/api/modules", get(routes::modules::get_modules))
+        .route("/api/modules/{id}", get(routes::modules::get_module_by_id))
         .merge(SwaggerUi::new("/swagger-ui").url("/api-docs/openapi.json", ApiDoc::openapi()))
         .layer(cors)
         .with_state(state);
 
-    let listener = tokio::net::TcpListener::bind(addr).await.expect("failed to bind");
+    let listener = tokio::net::TcpListener::bind(addr)
+        .await
+        .expect("failed to bind");
 
     println!("backend listening on {addr}");
 

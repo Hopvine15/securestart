@@ -1,6 +1,10 @@
-use axum::{ Json, extract::State, http::StatusCode };
+use axum::{
+    Json,
+    extract::{Path, State},
+    http::StatusCode,
+};
 
-use crate::{ AppState, auth::AuthenticatedUser, models::training_module::TrainingModule };
+use crate::{AppState, auth::AuthenticatedUser, models::training_module::TrainingModule};
 
 #[utoipa::path(
     get,
@@ -15,11 +19,41 @@ use crate::{ AppState, auth::AuthenticatedUser, models::training_module::Trainin
 )]
 pub async fn get_modules(
     State(state): State<AppState>,
-    _user: AuthenticatedUser
+    _user: AuthenticatedUser,
 ) -> Result<Json<Vec<TrainingModule>>, (StatusCode, &'static str)> {
-    let modules = state.modules
-        .find_all().await
+    let modules = state
+        .modules
+        .find_all()
+        .await
         .map_err(|_| (StatusCode::INTERNAL_SERVER_ERROR, "Database error"))?;
 
     Ok(Json(modules))
+}
+
+#[utoipa::path(
+    get,
+    path = "/api/modules/{id}",
+    tag = "Training Modules",
+    params(("id" = String, Path, description = "Application-facing module identifier")),
+    security(("bearer_auth" = [])),
+    responses(
+        (status = 200, description = "Training module", body = TrainingModule),
+        (status = 401, description = "Missing or invalid bearer token"),
+        (status = 404, description = "Training module not found"),
+        (status = 500, description = "Database error")
+    )
+)]
+pub async fn get_module_by_id(
+    State(state): State<AppState>,
+    _user: AuthenticatedUser,
+    Path(id): Path<String>,
+) -> Result<Json<TrainingModule>, (StatusCode, &'static str)> {
+    let module = state
+        .modules
+        .find_by_id(&id)
+        .await
+        .map_err(|_| (StatusCode::INTERNAL_SERVER_ERROR, "Database error"))?
+        .ok_or((StatusCode::NOT_FOUND, "Module not found"))?;
+
+    Ok(Json(module))
 }
