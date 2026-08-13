@@ -13,7 +13,7 @@ use tower::ServiceExt;
 
 use crate::{
     AppState,
-    models::training_module::TrainingModule,
+    models::training_module::{QuestionOption, QuizQuestion, TrainingModule},
     repositories::{module_repository::ModuleRepository, user_repository::MongoUserRepository},
     routes::modules::{get_module_by_id, get_modules},
 };
@@ -82,6 +82,22 @@ fn modules() -> Vec<TrainingModule> {
             learning_objective: "Identify suspicious AI-assisted messages.".to_string(),
             estimated_minutes: 10,
             content: "Module content".to_string(),
+            questions: vec![QuizQuestion {
+                id: "verify-request".to_string(),
+                question: "What should you do before responding to an urgent password-reset email?"
+                    .to_string(),
+                options: vec![
+                    QuestionOption {
+                        id: "verify".to_string(),
+                        text: "Verify the request independently.".to_string(),
+                    },
+                    QuestionOption {
+                        id: "click".to_string(),
+                        text: "Use the link in the email.".to_string(),
+                    },
+                ],
+                correct_answer: "verify".to_string(),
+            }],
         },
         TrainingModule {
             id: "secure-ai-coding".to_string(),
@@ -90,6 +106,7 @@ fn modules() -> Vec<TrainingModule> {
             learning_objective: "Review AI-generated code for security risks.".to_string(),
             estimated_minutes: 8,
             content: "Module content".to_string(),
+            questions: vec![],
         },
     ]
 }
@@ -267,6 +284,108 @@ async fn module_lookup_failures_are_sanitised() {
         .oneshot(
             Request::builder()
                 .uri("/api/modules/ai-phishing")
+                .header(header::AUTHORIZATION, "Bearer valid-test-token")
+                .body(Body::empty())
+                .expect("valid request"),
+        )
+        .await
+        .expect("router response");
+
+    assert_eq!(response.status(), StatusCode::INTERNAL_SERVER_ERROR);
+    assert_eq!(repository.find_by_id_call_count(), 1);
+
+    let body = axum::body::to_bytes(response.into_body(), usize::MAX)
+        .await
+        .expect("response body");
+    assert_eq!(&body[..], b"Database error");
+}
+
+// RED checkpoint for GET /api/modules/:id/questions. The application router
+// does not register this endpoint yet; these tests define its protected,
+// answer-safe contract before the production handler is implemented.
+#[tokio::test]
+async fn authenticated_request_for_a_modules_questions_returns_safe_question_data() {
+    let repository = Arc::new(InMemoryModuleRepository::with_modules(modules()));
+    let response = app_under_test(repository.clone())
+        .await
+        .oneshot(
+            Request::builder()
+                .uri("/api/modules/ai-phishing/questions")
+                .header(header::AUTHORIZATION, "Bearer valid-test-token")
+                .body(Body::empty())
+                .expect("valid request"),
+        )
+        .await
+        .expect("router response");
+
+    assert_eq!(response.status(), StatusCode::OK);
+    assert_eq!(repository.find_by_id_call_count(), 1);
+
+    let body = axum::body::to_bytes(response.into_body(), usize::MAX)
+        .await
+        .expect("response body");
+    let questions: Vec<serde_json::Value> =
+        serde_json::from_slice(&body).expect("question list JSON response");
+
+    assert_eq!(questions.len(), 1);
+    assert_eq!(questions[0]["id"], "verify-request");
+    assert_eq!(
+        questions[0]["question"],
+        "What should you do before responding to an urgent password-reset email?"
+    );
+    assert_eq!(questions[0]["options"][0]["id"], "verify");
+    assert_eq!(
+        questions[0]["options"][0]["text"],
+        "Verify the request independently."
+    );
+    assert!(!String::from_utf8_lossy(&body).contains("correct_answer"));
+}
+
+#[tokio::test]
+async fn unauthenticated_request_for_a_modules_questions_is_rejected_before_module_lookup() {
+    let repository = Arc::new(InMemoryModuleRepository::with_modules(modules()));
+    let response = app_under_test(repository.clone())
+        .await
+        .oneshot(
+            Request::builder()
+                .uri("/api/modules/ai-phishing/questions")
+                .body(Body::empty())
+                .expect("valid request"),
+        )
+        .await
+        .expect("router response");
+
+    assert_eq!(response.status(), StatusCode::UNAUTHORIZED);
+    assert_eq!(repository.find_by_id_call_count(), 0);
+}
+
+#[tokio::test]
+async fn authenticated_request_for_an_unknown_modules_questions_returns_not_found() {
+    let repository = Arc::new(InMemoryModuleRepository::with_modules(modules()));
+    let response = app_under_test(repository.clone())
+        .await
+        .oneshot(
+            Request::builder()
+                .uri("/api/modules/unknown-module/questions")
+                .header(header::AUTHORIZATION, "Bearer valid-test-token")
+                .body(Body::empty())
+                .expect("valid request"),
+        )
+        .await
+        .expect("router response");
+
+    assert_eq!(response.status(), StatusCode::NOT_FOUND);
+    assert_eq!(repository.find_by_id_call_count(), 1);
+}
+
+#[tokio::test]
+async fn question_lookup_failures_are_sanitised() {
+    let repository = Arc::new(InMemoryModuleRepository::failing());
+    let response = app_under_test(repository.clone())
+        .await
+        .oneshot(
+            Request::builder()
+                .uri("/api/modules/ai-phishing/questions")
                 .header(header::AUTHORIZATION, "Bearer valid-test-token")
                 .body(Body::empty())
                 .expect("valid request"),
