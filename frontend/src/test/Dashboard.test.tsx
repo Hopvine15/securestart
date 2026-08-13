@@ -3,7 +3,7 @@ import { cleanup, render, screen, waitFor } from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
 import { MemoryRouter, Route, Routes } from "react-router-dom";
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
-import Dashboard from "../Dashboard";
+import Dashboard from "../pages/Dashboard";
 
 vi.mock("@auth0/auth0-react", () => ({
   useAuth0: vi.fn(),
@@ -72,6 +72,15 @@ describe("Dashboard module list", () => {
 
     expect(await screen.findByText(module.title)).toBeInTheDocument();
     expect(await screen.findByText(module.description)).toBeInTheDocument();
+  });
+
+  it("shows an error when training modules cannot be loaded", async () => {
+    fetchModules.mockResolvedValue({ ok: false });
+    renderDashboard();
+
+    expect(
+      await screen.findByText("Unable to load training modules."),
+    ).toBeInTheDocument();
   });
 
   it("opens a selected module", async () => {
