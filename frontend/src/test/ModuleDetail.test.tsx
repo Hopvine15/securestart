@@ -1,5 +1,6 @@
 import { useAuth0 } from "@auth0/auth0-react";
 import { cleanup, render, screen, waitFor } from "@testing-library/react";
+import userEvent from "@testing-library/user-event";
 import { MemoryRouter, Route, Routes } from "react-router-dom";
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 import ModuleDetail from "../pages/ModuleDetail";
@@ -18,6 +19,7 @@ const trainingModule = {
 
 const getAccessTokenSilently = vi.fn();
 const fetchModule = vi.fn();
+const logout = vi.fn();
 
 function renderModuleDetail() {
   return render(
@@ -39,6 +41,8 @@ describe("Module detail page", () => {
     });
     vi.mocked(useAuth0).mockReturnValue({
       getAccessTokenSilently,
+      logout,
+      user: { email: "learner@example.test" },
     } as never);
     vi.stubGlobal("fetch", fetchModule);
   });
@@ -76,5 +80,16 @@ describe("Module detail page", () => {
     renderModuleDetail();
 
     expect(await screen.findByText("Unable to load this training module.")).toBeInTheDocument();
+  });
+
+  it("keeps logout available in the shared product header", async () => {
+    const user = userEvent.setup();
+    renderModuleDetail();
+
+    await user.click(screen.getByRole("button", { name: "Log out" }));
+
+    expect(logout).toHaveBeenCalledWith({
+      logoutParams: { returnTo: window.location.origin },
+    });
   });
 });

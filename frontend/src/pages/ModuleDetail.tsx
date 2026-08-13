@@ -1,6 +1,9 @@
 import { useAuth0, withAuthenticationRequired } from "@auth0/auth0-react";
 import { useEffect, useState } from "react";
 import { Link, useParams } from "react-router-dom";
+import PageContainer from "../components/layout/PageContainer";
+import ProductHeader from "../components/ProductHeader";
+import BaseCard from "../components/ui/BaseCard";
 
 type TrainingModule = {
   id: string;
@@ -66,22 +69,41 @@ function ModuleDetail() {
   }, [getAccessTokenSilently, id]);
 
   return (
-    <main>
-      <Link to="/dashboard">Back to dashboard</Link>
+    <div className="min-h-screen bg-canvas">
+      <ProductHeader active="training" />
 
-      {isLoading && <p>Loading training module...</p>}
-      {error && <p>Unable to load this training module.</p>}
+      <PageContainer width="content">
+        <Link className="mb-4 ml-2 inline-block text-sm text-muted no-underline hover:text-cyan-dark md:ml-6" to="/dashboard">← Back to dashboard</Link>
 
-      {module && (
-        <article>
-          <header>
-            <h1>{module.title}</h1>
-            <p>{module.description}</p>
-          </header>
-          <div>{module.content}</div>
-        </article>
-      )}
-    </main>
+        {isLoading && <p className="my-6 text-muted">Loading training module...</p>}
+        {error && <p className="my-6 text-error">Unable to load this training module.</p>}
+
+        {module && (
+          <>
+            <BaseCard as="article" padding="lg" className="grid gap-6 md:grid-cols-2">
+              <div>
+                <span className="rounded-full bg-cyan-soft px-2.5 py-1.5 text-2xs font-bold uppercase tracking-wide text-status-text">Training module</span>
+                <h1 className="my-4 text-4xl font-bold tracking-tight text-ink md:text-5xl">{module.title}</h1>
+                <p className="mb-6 text-lg text-muted">{module.description}</p>
+                <div className="flex items-center gap-4 text-xs text-muted">
+                  <span>Self-paced reading</span>
+                  <span className="border-l border-border pl-4">Security learning</span>
+                </div>
+              </div>
+              <aside className="self-start rounded-xl border border-border bg-surface-muted p-6">
+                <p className="mb-1 text-xs font-bold uppercase tracking-widest text-cyan-dark">Learning objective</p>
+                <p className="mb-0 text-md text-muted">Understand the key ideas in this module and apply them safely in your work.</p>
+              </aside>
+            </BaseCard>
+
+            <BaseCard as="article" className="mt-5">
+              <p className="mb-1 text-xs font-bold uppercase tracking-widest text-cyan-dark">Module content</p>
+              <div className="max-w-prose whitespace-pre-wrap text-base text-ink">{module.content}</div>
+            </BaseCard>
+          </>
+        )}
+      </PageContainer>
+    </div>
   );
 }
 
