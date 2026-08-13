@@ -79,12 +79,16 @@ fn modules() -> Vec<TrainingModule> {
             id: "ai-phishing".to_string(),
             title: "AI Phishing Risks".to_string(),
             description: "Learn how AI can make phishing attempts more convincing.".to_string(),
+            learning_objective: "Identify suspicious AI-assisted messages.".to_string(),
+            estimated_minutes: 10,
             content: "Module content".to_string(),
         },
         TrainingModule {
             id: "secure-ai-coding".to_string(),
             title: "Secure AI-Assisted Coding".to_string(),
             description: "Learn how to review AI-generated code safely.".to_string(),
+            learning_objective: "Review AI-generated code for security risks.".to_string(),
+            estimated_minutes: 8,
             content: "Module content".to_string(),
         },
     ]
@@ -137,6 +141,11 @@ async fn authenticated_request_returns_available_modules_as_json() {
         modules[0].description,
         "Learn how AI can make phishing attempts more convincing."
     );
+    assert_eq!(
+        modules[0].learning_objective,
+        "Identify suspicious AI-assisted messages."
+    );
+    assert_eq!(modules[0].estimated_minutes, 10);
 }
 
 #[tokio::test]

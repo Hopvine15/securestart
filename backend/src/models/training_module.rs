@@ -1,4 +1,4 @@
-use serde::{ Deserialize, Serialize };
+use serde::{Deserialize, Serialize};
 use utoipa::ToSchema;
 
 /// A training module exposed by my API
@@ -10,5 +10,7 @@ pub struct TrainingModule {
     pub id: String,
     pub title: String,
     pub description: String,
+    pub learning_objective: String,
+    pub estimated_minutes: u32,
     pub content: String,
 }
