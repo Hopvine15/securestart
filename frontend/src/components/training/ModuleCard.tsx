@@ -11,6 +11,7 @@ type ModuleCardProps = {
   to: string;
   status?: ModuleStatus;
   estimatedMinutes: number;
+  progress?: number;
   actionLabel?: string;
 };
 
@@ -20,6 +21,8 @@ const statusStyles = {
     badge: "border-border bg-surface-muted text-muted",
     dot: "bg-muted",
     card: "border-border",
+    progress: "bg-cyan",
+    percentage: "text-cyan",
     action: "Start module",
     actionVariant: "dark",
   },
@@ -28,6 +31,8 @@ const statusStyles = {
     badge: "border-cyan bg-cyan text-cyan-dark",
     dot: "bg-cyan-dark",
     card: "border-cyan ring-1 ring-cyan/20",
+    progress: "bg-cyan",
+    percentage: "text-cyan",
     action: "Continue",
     actionVariant: "primary",
   },
@@ -36,10 +41,16 @@ const statusStyles = {
     badge: "border-success-foreground bg-success-background text-success-foreground",
     dot: "bg-success-foreground",
     card: "border-border",
+    progress: "bg-success-foreground",
+    percentage: "text-success-foreground",
     action: "Review",
     actionVariant: "secondary",
   },
 } as const;
+
+function normaliseProgress(progress: number) {
+  return Math.min(100, Math.max(0, progress));
+}
 
 export default function ModuleCard({
   title,
@@ -47,9 +58,11 @@ export default function ModuleCard({
   to,
   status = "not-started",
   estimatedMinutes,
+  progress: suppliedProgress,
   actionLabel,
 }: ModuleCardProps) {
   const styles = statusStyles[status];
+  const progress = normaliseProgress(suppliedProgress ?? (status === "completed" ? 100 : 0));
 
   return (
     <BaseCard
@@ -58,6 +71,9 @@ export default function ModuleCard({
       state="interactive"
       className={`flex min-h-72 flex-col overflow-hidden ${styles.card}`}
     >
+      <div className="h-1.5 w-full bg-border" aria-hidden="true">
+        <div className={`h-full ${styles.progress}`} style={{ width: `${progress}%` }} />
+      </div>
       <div className="flex flex-1 flex-col gap-4 p-6">
         <div className="flex items-start justify-between gap-3">
           <span className={`inline-flex items-center gap-1.5 rounded-full border px-3 py-1.5 text-xs font-bold uppercase tracking-wide ${styles.badge}`}>
@@ -74,7 +90,24 @@ export default function ModuleCard({
           <p className="mt-2 text-sm text-muted">{description}</p>
         </div>
 
-        <ButtonLink ariaLabel={`${actionLabel ?? styles.action}: ${title}`} className="mt-auto" fullWidth to={to} variant={styles.actionVariant}>
+        <div className="mt-auto pt-2">
+          <div className="flex items-center justify-between text-xs">
+            <span className="font-medium text-ink">Progress</span>
+            <span className={`font-bold ${styles.percentage}`}>{progress}%</span>
+          </div>
+          <div
+            aria-label={`${title} progress`}
+            aria-valuemax={100}
+            aria-valuemin={0}
+            aria-valuenow={progress}
+            className="mt-1 h-2 overflow-hidden rounded-full bg-border"
+            role="progressbar"
+          >
+            <div className={`h-full rounded-full ${styles.progress}`} style={{ width: `${progress}%` }} />
+          </div>
+        </div>
+
+        <ButtonLink ariaLabel={`${actionLabel ?? styles.action}: ${title}`} fullWidth to={to} variant={styles.actionVariant}>
           {actionLabel ?? styles.action} <ChevronRight aria-hidden="true" className="size-4" />
         </ButtonLink>
       </div>

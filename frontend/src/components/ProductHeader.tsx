@@ -45,10 +45,13 @@ export default function ProductHeader({ active }: ProductHeaderProps) {
           <LayoutDashboard aria-hidden="true" className="size-4" />
           Dashboard
         </Link>
-        <span className="inline-flex items-center gap-2 rounded-xl px-3 py-2 text-sm font-medium text-steel md:px-4 md:py-2.5">
+        <Link
+          className={`inline-flex items-center gap-2 rounded-xl px-3 py-2 text-sm font-medium text-steel no-underline transition-colors hover:bg-white/10 hover:text-white md:px-4 md:py-2.5 ${active === "training" ? "bg-white/10 font-semibold text-white" : ""}`}
+          to="/training"
+        >
           <BookOpen aria-hidden="true" className="size-4" />
           My training
-        </span>
+        </Link>
         <span className="inline-flex items-center gap-2 rounded-xl px-3 py-2 text-sm font-medium text-steel md:px-4 md:py-2.5">
           <ChartNoAxesColumn aria-hidden="true" className="size-4" />
           Progress

@@ -3,12 +3,13 @@ import { MemoryRouter } from "react-router-dom";
 import { afterEach, describe, expect, it } from "vitest";
 import ModuleCard from "../components/training/ModuleCard";
 
-function renderCard(status: "not-started" | "in-progress" | "completed") {
+function renderCard(status: "not-started" | "in-progress" | "completed", progress?: number) {
   return render(
     <MemoryRouter>
       <ModuleCard
         description="A reusable dashboard module card."
         estimatedMinutes={10}
+        progress={progress}
         status={status}
         title="Example module"
         to="/modules/example"
@@ -41,9 +42,10 @@ describe("ModuleCard", () => {
     expect(screen.getByRole("link", { name: "Review: Example module" })).toBeInTheDocument();
   });
 
-  it("pushes the primary action to the bottom of the card", () => {
-    renderCard("not-started");
+  it("shows supplied progress for an in-progress module", () => {
+    renderCard("in-progress", 40);
 
-    expect(screen.getByRole("link", { name: "Start module: Example module" })).toHaveClass("mt-auto");
+    expect(screen.getByRole("progressbar")).toHaveAttribute("aria-valuenow", "40");
+    expect(screen.getByText("40%")).toBeInTheDocument();
   });
 });

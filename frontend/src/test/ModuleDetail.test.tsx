@@ -97,4 +97,10 @@ describe("Module detail page", () => {
       logoutParams: { returnTo: window.location.origin },
     });
   });
+
+  it("keeps My training active while viewing module content", () => {
+    renderModuleDetail();
+
+    expect(screen.getByRole("link", { name: "My training" })).toHaveClass("bg-white/10");
+  });
 });
