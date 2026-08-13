@@ -8,6 +8,7 @@ function renderCard(status: "not-started" | "in-progress" | "completed") {
     <MemoryRouter>
       <ModuleCard
         description="A reusable dashboard module card."
+        estimatedMinutes={10}
         status={status}
         title="Example module"
         to="/modules/example"

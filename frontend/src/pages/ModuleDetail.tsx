@@ -9,6 +9,8 @@ type TrainingModule = {
   id: string;
   title: string;
   description: string;
+  learning_objective: string;
+  estimated_minutes: number;
   content: string;
 };
 
@@ -86,19 +88,23 @@ function ModuleDetail() {
                 <h1 className="my-4 text-4xl font-bold tracking-tight text-ink md:text-5xl">{module.title}</h1>
                 <p className="mb-6 text-lg text-muted">{module.description}</p>
                 <div className="flex items-center gap-4 text-xs text-muted">
-                  <span>Self-paced reading</span>
+                  <span>{module.estimated_minutes} min read</span>
                   <span className="border-l border-border pl-4">Security learning</span>
                 </div>
               </div>
               <aside className="self-start rounded-xl border border-border bg-surface-muted p-6">
                 <p className="mb-1 text-xs font-bold uppercase tracking-widest text-cyan-dark">Learning objective</p>
-                <p className="mb-0 text-md text-muted">Understand the key ideas in this module and apply them safely in your work.</p>
+                <p className="mb-0 text-md text-muted">{module.learning_objective}</p>
               </aside>
             </BaseCard>
 
             <BaseCard as="article" className="mt-5">
               <p className="mb-1 text-xs font-bold uppercase tracking-widest text-cyan-dark">Module content</p>
-              <div className="max-w-prose whitespace-pre-wrap text-base text-ink">{module.content}</div>
+              <div className="max-w-prose space-y-4 text-base text-ink">
+                {module.content.split("\n\n").map((paragraph, index) => (
+                  <p key={`${module.id}-${index}`}>{paragraph}</p>
+                ))}
+              </div>
             </BaseCard>
           </>
         )}

@@ -14,7 +14,9 @@ const trainingModule = {
   id: "ai-phishing-risks",
   title: "AI Phishing Risks",
   description: "Learn how AI can make phishing attacks more convincing.",
-  content: "Check the sender, verify links independently, and report suspicious messages.",
+  learning_objective: "Identify common signs of AI-assisted phishing and safely verify suspicious requests.",
+  estimated_minutes: 10,
+  content: "Check the sender and verify links independently.\n\nReport suspicious messages.",
 };
 
 const getAccessTokenSilently = vi.fn();
@@ -67,12 +69,15 @@ describe("Module detail page", () => {
     });
   });
 
-  it("renders the module content returned by the API", async () => {
+  it("renders the module content and metadata returned by the API", async () => {
     renderModuleDetail();
 
     expect(await screen.findByRole("heading", { name: trainingModule.title })).toBeInTheDocument();
     expect(await screen.findByText(trainingModule.description)).toBeInTheDocument();
-    expect(await screen.findByText(trainingModule.content)).toBeInTheDocument();
+    expect(await screen.findByText("Check the sender and verify links independently.")).toBeInTheDocument();
+    expect(await screen.findByText("Report suspicious messages.")).toBeInTheDocument();
+    expect(await screen.findByText(trainingModule.learning_objective)).toBeInTheDocument();
+    expect(await screen.findByText("10 min read")).toBeInTheDocument();
   });
 
   it("shows an error when the selected module cannot be loaded", async () => {

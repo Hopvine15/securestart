@@ -14,7 +14,7 @@ const module = {
   id: "ai-phishing-risks",
   title: "AI Phishing Risks",
   description: "Learn how AI can make phishing attacks more convincing.",
-  content: "...",
+  estimated_minutes: 10,
 };
 
 const getAccessTokenSilently = vi.fn();
@@ -67,11 +67,12 @@ describe("Dashboard module list", () => {
     });
   });
 
-  it("renders the title and description of available training modules", async () => {
+  it("renders the title, description, and estimated duration from available training modules", async () => {
     renderDashboard();
 
     expect(await screen.findByText(module.title)).toBeInTheDocument();
     expect(await screen.findByText(module.description)).toBeInTheDocument();
+    expect(await screen.findByText("10 min")).toBeInTheDocument();
   });
 
   it("shows an error when training modules cannot be loaded", async () => {

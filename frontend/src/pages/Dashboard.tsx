@@ -9,9 +9,8 @@ type TrainingModule = {
   id: string;
   title: string;
   description: string;
+  estimated_minutes: number;
   status?: ModuleStatus;
-  progress?: number;
-  duration?: string;
 };
 
 function Dashboard() {
@@ -100,7 +99,7 @@ function Dashboard() {
             {modules.map((module) => (
               <ModuleCard
                 description={module.description}
-                duration={module.duration}
+                estimatedMinutes={module.estimated_minutes}
                 key={module.id}
                 status={module.status}
                 title={module.title}

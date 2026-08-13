@@ -10,7 +10,7 @@ type ModuleCardProps = {
   description: string;
   to: string;
   status?: ModuleStatus;
-  duration?: string;
+  estimatedMinutes: number;
   actionLabel?: string;
 };
 
@@ -46,7 +46,7 @@ export default function ModuleCard({
   description,
   to,
   status = "not-started",
-  duration = "y mins",
+  estimatedMinutes,
   actionLabel,
 }: ModuleCardProps) {
   const styles = statusStyles[status];
@@ -64,7 +64,7 @@ export default function ModuleCard({
             <span className={`size-2 rounded-full ${styles.dot}`} aria-hidden="true" />
             {styles.label}
           </span>
-          <span className="shrink-0 text-xs text-muted">{duration}</span>
+          <span className="shrink-0 text-xs text-muted">{estimatedMinutes} min</span>
         </div>
 
         <div>
