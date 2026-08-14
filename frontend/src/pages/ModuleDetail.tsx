@@ -4,6 +4,7 @@ import { Link, useParams } from "react-router-dom";
 import PageContainer from "../components/layout/PageContainer";
 import ProductHeader from "../components/ProductHeader";
 import BaseCard from "../components/ui/BaseCard";
+import ButtonLink from "../components/ui/ButtonLink";
 
 type TrainingModule = {
   id: string;
@@ -104,6 +105,12 @@ function ModuleDetail() {
                 {module.content.split("\n\n").map((paragraph, index) => (
                   <p key={`${module.id}-${index}`}>{paragraph}</p>
                 ))}
+              </div>
+              <div className="mt-8 border-t border-border pt-6">
+                <p className="mb-3 text-sm text-muted">Ready to check what you learned?</p>
+                <ButtonLink ariaLabel={`Start quiz: ${module.title}`} to={`/modules/${module.id}/quiz`}>
+                  Start quiz
+                </ButtonLink>
               </div>
             </BaseCard>
           </>

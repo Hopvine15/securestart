@@ -28,6 +28,7 @@ function renderModuleDetail() {
     <MemoryRouter initialEntries={[`/modules/${trainingModule.id}`]}>
       <Routes>
         <Route path="/modules/:id" element={<ModuleDetail />} />
+        <Route path="/modules/:id/quiz" element={<p>Quiz page</p>} />
       </Routes>
     </MemoryRouter>,
   );
@@ -96,6 +97,15 @@ describe("Module detail page", () => {
     expect(logout).toHaveBeenCalledWith({
       logoutParams: { returnTo: window.location.origin },
     });
+  });
+
+  it("leads learners from the module content into its quiz", async () => {
+    const user = userEvent.setup();
+    renderModuleDetail();
+
+    await user.click(await screen.findByRole("link", { name: "Start quiz: AI Phishing Risks" }));
+
+    expect(screen.getByText("Quiz page")).toBeInTheDocument();
   });
 
   it("keeps My training active while viewing module content", () => {

@@ -2,7 +2,7 @@ import { useAuth0, withAuthenticationRequired } from "@auth0/auth0-react";
 import { useEffect, useState } from "react";
 import PageContainer from "../components/layout/PageContainer";
 import ProductHeader from "../components/ProductHeader";
-import ModuleCard from "../components/training/ModuleCard";
+import ModuleCard, { type ModuleStatus } from "../components/training/ModuleCard";
 
 type TrainingModule = {
   id: string;
@@ -11,11 +11,29 @@ type TrainingModule = {
   estimated_minutes: number;
 };
 
+type ProgressRecord = {
+  module_id: string;
+  best_score: number;
+};
+
+type ProgressResponse = {
+  completed_modules: ProgressRecord[];
+};
+
+type DisplayTrainingModule = TrainingModule & {
+  status: ModuleStatus;
+  bestScore?: number;
+};
+
+const PASSING_SCORE = 80;
+
 function Training() {
   const { getAccessTokenSilently } = useAuth0();
   const [modules, setModules] = useState<TrainingModule[]>([]);
+  const [progress, setProgress] = useState<ProgressResponse | null>(null);
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState(false);
+  const [progressError, setProgressError] = useState(false);
 
   useEffect(() => {
     let isCurrent = true;
@@ -42,6 +60,32 @@ function Training() {
         if (isCurrent) {
           setModules(data);
         }
+
+        try {
+          const progressResponse = await fetch(`${import.meta.env.VITE_API_URL}/api/progress`, {
+            headers: {
+              Authorization: `Bearer ${token}`,
+            },
+          });
+
+          if (!progressResponse.ok) {
+            throw new Error("Unable to load training progress");
+          }
+
+          const progressData = (await progressResponse.json()) as ProgressResponse;
+
+          if (!Array.isArray(progressData.completed_modules)) {
+            throw new Error("Invalid training progress response");
+          }
+
+          if (isCurrent) {
+            setProgress(progressData);
+          }
+        } catch {
+          if (isCurrent) {
+            setProgressError(true);
+          }
+        }
       } catch {
         if (isCurrent) {
           setError(true);
@@ -60,6 +104,23 @@ function Training() {
     };
   }, [getAccessTokenSilently]);
 
+  const progressByModuleId = new Map(
+    progress?.completed_modules.map((record) => [record.module_id, record]) ?? [],
+  );
+  const displayedModules: DisplayTrainingModule[] = modules.map((module) => {
+    const moduleProgress = progressByModuleId.get(module.id);
+
+    if (!moduleProgress) {
+      return { ...module, status: "not-started" };
+    }
+
+    return {
+      ...module,
+      status: moduleProgress.best_score >= PASSING_SCORE ? "completed" : "retake-required",
+      bestScore: moduleProgress.best_score,
+    };
+  });
+
   return (
     <div className="min-h-screen bg-canvas">
       <ProductHeader active="training" />
@@ -72,13 +133,16 @@ function Training() {
 
           {isLoading && <p className="my-6 text-muted">Loading training modules...</p>}
           {error && <p className="my-6 text-error">Unable to load training modules.</p>}
+          {progressError && <p className="my-6 text-muted">Unable to load training progress. Showing modules as not started.</p>}
 
           <div className="grid grid-cols-1 gap-5 md:grid-cols-2 xl:grid-cols-3">
-            {modules.map((module) => (
+            {displayedModules.map((module) => (
               <ModuleCard
+                bestScore={module.bestScore}
                 description={module.description}
                 estimatedMinutes={module.estimated_minutes}
                 key={module.id}
+                status={module.status}
                 title={module.title}
                 to={`/modules/${module.id}`}
               />

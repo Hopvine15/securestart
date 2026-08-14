@@ -111,6 +111,21 @@ impl QuizAttemptRepository for InMemoryQuizAttemptRepository {
             .push(attempt);
         Ok(())
     }
+
+    async fn find_by_user(&self, user_id: &str) -> Result<Vec<QuizAttempt>, String> {
+        if self.should_fail {
+            return Err("MongoDB connection refused".to_string());
+        }
+
+        Ok(self
+            .attempts
+            .lock()
+            .map_err(|_| "repository lock poisoned".to_string())?
+            .iter()
+            .filter(|attempt| attempt.user_id == user_id)
+            .cloned()
+            .collect())
+    }
 }
 
 fn modules() -> Vec<TrainingModule> {

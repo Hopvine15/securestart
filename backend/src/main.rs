@@ -41,11 +41,13 @@ pub struct AppState {
         routes::modules::get_modules,
         routes::modules::get_module_by_id,
         routes::modules::get_module_questions,
+        routes::progress::get_progress,
         routes::quiz_attempts::create_quiz_attempt
     ),
     tags(
         (name = "Authentication", description = "Endpoints that require an Auth0 bearer token"),
         (name = "Training Modules", description = "Available cybersecurity training modules"),
+        (name = "Learner Progress", description = "Completed training modules and scores"),
         (name = "Quiz Attempts", description = "Scored quiz submissions")
     ),
     modifiers(&SecurityAddon)
@@ -106,6 +108,7 @@ async fn main() {
         .route("/api/auth-test", get(routes::auth_test::auth_test))
         .route("/api/modules", get(routes::modules::get_modules))
         .route("/api/modules/{id}", get(routes::modules::get_module_by_id))
+        .route("/api/progress", get(routes::progress::get_progress))
         .route(
             "/api/modules/{id}/questions",
             get(routes::modules::get_module_questions),

@@ -3,7 +3,7 @@ import { Link } from "react-router-dom";
 import BaseCard from "../ui/BaseCard";
 import ButtonLink from "../ui/ButtonLink";
 
-export type ModuleStatus = "not-started" | "in-progress" | "completed";
+export type ModuleStatus = "not-started" | "in-progress" | "retake-required" | "completed";
 
 type ModuleCardProps = {
   title: string;
@@ -12,6 +12,7 @@ type ModuleCardProps = {
   status?: ModuleStatus;
   estimatedMinutes: number;
   progress?: number;
+  bestScore?: number;
   actionLabel?: string;
 };
 
@@ -36,6 +37,16 @@ const statusStyles = {
     action: "Continue",
     actionVariant: "primary",
   },
+  "retake-required": {
+    label: "Retake required",
+    badge: "border-error bg-surface-muted text-error",
+    dot: "bg-error",
+    card: "border-error",
+    progress: "bg-cyan",
+    percentage: "text-error",
+    action: "Retake module",
+    actionVariant: "dark",
+  },
   completed: {
     label: "Completed",
     badge: "border-success-foreground bg-success-background text-success-foreground",
@@ -59,10 +70,12 @@ export default function ModuleCard({
   status = "not-started",
   estimatedMinutes,
   progress: suppliedProgress,
+  bestScore,
   actionLabel,
 }: ModuleCardProps) {
   const styles = statusStyles[status];
   const progress = normaliseProgress(suppliedProgress ?? (status === "completed" ? 100 : 0));
+  const topStatusBar = status === "retake-required" ? "bg-error" : "bg-border";
 
   return (
     <BaseCard
@@ -71,7 +84,7 @@ export default function ModuleCard({
       state="interactive"
       className={`flex min-h-72 flex-col overflow-hidden ${styles.card}`}
     >
-      <div className="h-1.5 w-full bg-border" aria-hidden="true">
+      <div className={`h-1.5 w-full ${topStatusBar}`} aria-hidden="true">
         <div className={`h-full ${styles.progress}`} style={{ width: `${progress}%` }} />
       </div>
       <div className="flex flex-1 flex-col gap-4 p-6">
@@ -88,6 +101,11 @@ export default function ModuleCard({
             <Link className="no-underline hover:text-cyan-dark" to={to}>{title}</Link>
           </h3>
           <p className="mt-2 text-sm text-muted">{description}</p>
+          {(status === "completed" || status === "retake-required") && bestScore !== undefined && (
+            <p className={`mt-2 text-sm font-medium ${status === "completed" ? "text-success-foreground" : "text-error"}`}>
+              Best score: {bestScore}%
+            </p>
+          )}
         </div>
 
         <div className="mt-auto pt-2">

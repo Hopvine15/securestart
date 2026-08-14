@@ -3,7 +3,7 @@ import { MemoryRouter } from "react-router-dom";
 import { afterEach, describe, expect, it } from "vitest";
 import ModuleCard from "../components/training/ModuleCard";
 
-function renderCard(status: "not-started" | "in-progress" | "completed", progress?: number) {
+function renderCard(status: "not-started" | "in-progress" | "retake-required" | "completed", progress?: number) {
   return render(
     <MemoryRouter>
       <ModuleCard
@@ -40,6 +40,16 @@ describe("ModuleCard", () => {
 
     expect(screen.getByText("Completed")).toBeInTheDocument();
     expect(screen.getByRole("link", { name: "Review: Example module" })).toBeInTheDocument();
+  });
+
+  it("renders the retake-required action", () => {
+    const { container } = renderCard("retake-required");
+
+    expect(screen.getByText("Retake required")).toBeInTheDocument();
+    expect(screen.getByRole("link", { name: "Retake module: Example module" })).toBeInTheDocument();
+    expect(container.querySelector("article")?.firstElementChild).toHaveClass("bg-error");
+    expect(screen.getByRole("progressbar")).toHaveClass("bg-border");
+    expect(screen.getByText("0%")).toHaveClass("text-error");
   });
 
   it("shows supplied progress for an in-progress module", () => {
