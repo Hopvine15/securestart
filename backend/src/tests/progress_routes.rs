@@ -18,9 +18,6 @@ use crate::{
     },
 };
 
-/// RED checkpoint for GET /api/progress. The production router deliberately
-/// does not register this endpoint yet; these tests define its public contract
-/// before the progress query and handler are introduced.
 struct InMemoryQuizAttemptRepository {
     attempts: Mutex<Vec<QuizAttempt>>,
     should_fail: bool,
@@ -55,6 +52,21 @@ impl QuizAttemptRepository for InMemoryQuizAttemptRepository {
             .push(attempt);
         Ok(())
     }
+
+    async fn find_by_user(&self, user_id: &str) -> Result<Vec<QuizAttempt>, String> {
+        if self.should_fail {
+            return Err("MongoDB connection refused".to_string());
+        }
+
+        Ok(self
+            .attempts
+            .lock()
+            .map_err(|_| "repository lock poisoned".to_string())?
+            .iter()
+            .filter(|attempt| attempt.user_id == user_id)
+            .cloned()
+            .collect())
+    }
 }
 
 async fn app_under_test(quiz_attempts: Arc<dyn QuizAttemptRepository>) -> Router {
@@ -67,7 +79,12 @@ async fn app_under_test(quiz_attempts: Arc<dyn QuizAttemptRepository>) -> Router
         quiz_attempts,
     };
 
-    Router::new().with_state(state)
+    Router::new()
+        .route(
+            "/api/progress",
+            axum::routing::get(crate::routes::progress::get_progress),
+        )
+        .with_state(state)
 }
 
 fn progress_request(authenticated: bool) -> Request<Body> {

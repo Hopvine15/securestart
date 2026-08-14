@@ -1,5 +1,6 @@
 use async_trait::async_trait;
-use mongodb::Client;
+use futures_util::TryStreamExt;
+use mongodb::{Client, bson::doc};
 
 use crate::models::quiz_attempt::QuizAttempt;
 
@@ -7,6 +8,7 @@ use crate::models::quiz_attempt::QuizAttempt;
 #[async_trait]
 pub trait QuizAttemptRepository: Send + Sync {
     async fn create(&self, attempt: QuizAttempt) -> Result<(), String>;
+    async fn find_by_user(&self, user_id: &str) -> Result<Vec<QuizAttempt>, String>;
 }
 
 #[derive(Clone)]
@@ -32,6 +34,18 @@ impl QuizAttemptRepository for MongoQuizAttemptRepository {
 
         Ok(())
     }
+
+    async fn find_by_user(&self, user_id: &str) -> Result<Vec<QuizAttempt>, String> {
+        self.client
+            .database("securestart")
+            .collection::<QuizAttempt>("quiz_attempts")
+            .find(doc! { "user_id": user_id })
+            .await
+            .map_err(|error| error.to_string())?
+            .try_collect()
+            .await
+            .map_err(|error| error.to_string())
+    }
 }
 
 /// Used only by route tests that do not exercise quiz-attempt persistence.
@@ -42,6 +56,10 @@ pub struct UnavailableQuizAttemptRepository;
 #[async_trait]
 impl QuizAttemptRepository for UnavailableQuizAttemptRepository {
     async fn create(&self, _attempt: QuizAttempt) -> Result<(), String> {
+        Err("Quiz attempt repository is not configured".to_string())
+    }
+
+    async fn find_by_user(&self, _user_id: &str) -> Result<Vec<QuizAttempt>, String> {
         Err("Quiz attempt repository is not configured".to_string())
     }
 }
