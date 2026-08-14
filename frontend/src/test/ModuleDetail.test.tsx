@@ -79,6 +79,7 @@ describe("Module detail page", () => {
     expect(await screen.findByText("Report suspicious messages.")).toBeInTheDocument();
     expect(await screen.findByText(trainingModule.learning_objective)).toBeInTheDocument();
     expect(await screen.findByText("10 min read")).toBeInTheDocument();
+    expect(await screen.findByText("You need a score of 80% or higher to pass.")).toBeInTheDocument();
   });
 
   it("shows an error when the selected module cannot be loaded", async () => {

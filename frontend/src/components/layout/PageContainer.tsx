@@ -6,8 +6,8 @@ type PageContainerProps = PropsWithChildren<{
 }>;
 
 const widths = {
-  page: "max-w-7xl",
-  content: "max-w-7xl",
+  page: "max-w-6xl",
+  content: "max-w-5xl",
 };
 
 export default function PageContainer({

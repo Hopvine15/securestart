@@ -10,16 +10,18 @@ type ResultNavigationState = {
   };
 };
 
+const PASSING_SCORE = 80;
+
 function feedbackForScore(score: number) {
-  if (score >= 80) {
+  if (score >= PASSING_SCORE) {
     return "Great work — you demonstrated a strong understanding of this module.";
   }
 
   if (score >= 50) {
-    return "Good progress — review the module content before moving on.";
+    return "Good progress — review the module content and try again to reach 80%.";
   }
 
-  return "Review the module and try the quiz again.";
+  return "Review the module and try the quiz again to reach 80%.";
 }
 
 function moduleTitleFromId(id?: string) {
@@ -55,6 +57,7 @@ function ResultsPage() {
 
   const feedback = feedbackForScore(score);
   const correctAnswers = score / 20;
+  const hasPassed = score >= PASSING_SCORE;
 
   return (
     <div className="min-h-screen bg-canvas">
@@ -84,11 +87,20 @@ function ResultsPage() {
                 </div>
                 <span className="mt-2 text-5xl font-bold tracking-tight text-ink">{score}%</span>
                 <span className="mt-1 text-xs text-muted">{correctAnswers} of 5 correct</span>
+                <span className="mt-1 text-xs font-medium text-muted">80% required to pass</span>
               </div>
               <div>
-                <p className="mb-2 inline-flex items-center gap-2 rounded-full bg-success-background px-3 py-1 text-sm font-semibold text-success-foreground">
-                  <CheckCircle2 aria-hidden="true" className="size-4" />
-                  Completed
+                <p className={`mb-2 inline-flex items-center gap-2 rounded-full px-3 py-1 text-sm font-semibold ${
+                  hasPassed
+                    ? "bg-success-background text-success-foreground"
+                    : "bg-red-50 text-error"
+                }`}>
+                  {hasPassed ? (
+                    <CheckCircle2 aria-hidden="true" className="size-4" />
+                  ) : (
+                    <CircleAlert aria-hidden="true" className="size-4" />
+                  )}
+                  {hasPassed ? "Passed" : "Retake required"}
                 </p>
                 <h2 className="mb-2 text-2xl font-semibold tracking-tight text-ink">{moduleTitle}</h2>
                 <p className="m-0 text-lg font-semibold text-ink" role="status">{feedback}</p>
@@ -99,7 +111,11 @@ function ResultsPage() {
               <Info aria-hidden="true" className="mt-0.5 size-5 shrink-0 text-blue-700" />
               <div>
                 <h2 className="mb-1 text-sm font-semibold text-blue-800" id="recommendation-heading">Next recommendation</h2>
-                <p className="mb-0 text-sm text-blue-700">Review this module before continuing your training.</p>
+                <p className="mb-0 text-sm text-blue-700">
+                  {hasPassed
+                    ? "You passed this module. Continue your training when you're ready."
+                    : "Review this module and retake the quiz. You need 80% to pass."}
+                </p>
               </div>
             </section>
 

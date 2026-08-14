@@ -109,7 +109,8 @@ function ModuleDetail() {
                 </div>
               </div>
               <div className="mt-8 border-t border-border pt-6">
-                <p className="mb-3 text-sm text-muted">Ready to check what you learned?</p>
+                <p className="mb-1 text-sm text-muted">Ready to check what you learned?</p>
+                <p className="mb-3 text-sm font-medium text-ink">You need a score of 80% or higher to pass.</p>
                 <ButtonLink ariaLabel={`Start quiz: ${module.title}`} to={`/modules/${module.id}/quiz`}>
                   Start quiz
                 </ButtonLink>

@@ -57,6 +57,8 @@ describe("Results page", () => {
       "role",
       "status",
     );
+    expect(screen.getByText("Passed")).toBeInTheDocument();
+    expect(screen.getByText("80% required to pass")).toBeInTheDocument();
   });
 
   it("renders the quiz module title alongside the result", () => {
@@ -65,7 +67,18 @@ describe("Results page", () => {
     expect(screen.getAllByText("AI Phishing Risks").length).toBeGreaterThan(0);
     expect(screen.getByText("4 of 5 correct")).toBeInTheDocument();
     expect(screen.getByRole("heading", { name: "Next recommendation" })).toBeInTheDocument();
-    expect(screen.getByText("Review this module before continuing your training.")).toBeInTheDocument();
+    expect(screen.getByText("You passed this module. Continue your training when you're ready.")).toBeInTheDocument();
+  });
+
+  it("marks scores below 80% as requiring a retake", () => {
+    renderResults({ score: 60 });
+
+    expect(screen.getByText("Retake required")).toBeInTheDocument();
+    expect(screen.getByText("Review this module and retake the quiz. You need 80% to pass.")).toBeInTheDocument();
+    expect(screen.getByText("Good progress — review the module content and try again to reach 80%.")).toHaveAttribute(
+      "role",
+      "status",
+    );
   });
 
   it("returns the learner to the Dashboard", async () => {
