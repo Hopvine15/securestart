@@ -29,12 +29,26 @@ const modules = [
     description: "Recognise common online threats.",
     estimated_minutes: 12,
   },
+  {
+    id: "device-security",
+    title: "Device security",
+    description: "Keep your work devices protected.",
+    estimated_minutes: 15,
+  },
 ];
 
 const progress = {
   completed_modules: [
-    { module_id: "ai-phishing-risks", best_score: 80 },
-    { module_id: "password-hygiene", best_score: 50 },
+    {
+      module_id: "ai-phishing-risks",
+      best_score: 80,
+      completed_at: { $date: { $numberLong: "1786708800000" } },
+    },
+    {
+      module_id: "password-hygiene",
+      best_score: 50,
+      completed_at: { $date: { $numberLong: "1786795200000" } },
+    },
   ],
   completed_count: 2,
 };
@@ -102,31 +116,39 @@ describe("Progress page", () => {
     });
   });
 
-  it("shows overall completion and the completed-module count", async () => {
+  it("shows overall completion, the completed-module count, and a status summary", async () => {
     renderProgressPage();
 
-    expect(await screen.findByText("33%", { selector: "strong" })).toBeInTheDocument();
-    expect(screen.getByText("1 of 3 modules complete")).toBeInTheDocument();
+    expect(await screen.findByText("25%", { selector: "strong" })).toBeInTheDocument();
+    expect(screen.getByText("1 of 4 modules complete")).toBeInTheDocument();
+    expect(screen.getByText("1 completed · 1 retake required · 2 not started")).toBeInTheDocument();
   });
 
-  it("shows not started, retake required, and completed module states", async () => {
+  it("shows every module in a compact progress record with its status", async () => {
     renderProgressPage();
 
-    expect(await screen.findByText("Completed")).toBeInTheDocument();
+    expect(await screen.findByRole("table", { name: "Module progress" })).toBeInTheDocument();
+    expect(await screen.findByRole("row", { name: /AI Phishing Risks/ })).toBeInTheDocument();
+    expect(screen.getByRole("row", { name: /Password hygiene/ })).toBeInTheDocument();
+    expect(screen.getByRole("row", { name: /Secure browsing/ })).toBeInTheDocument();
+    expect(screen.getByRole("row", { name: /Device security/ })).toBeInTheDocument();
+    expect(screen.getAllByText("Completed")).toHaveLength(1);
     expect(screen.getByText("Retake required")).toBeInTheDocument();
-    expect(screen.getByText("Not started")).toBeInTheDocument();
+    expect(screen.getAllByText("Not started")).toHaveLength(2);
   });
 
-  it("uses the 80% pass threshold and shows attempted modules' best scores", async () => {
+  it("uses the 80% pass threshold and shows best scores and last attempt dates", async () => {
     renderProgressPage();
 
-    const completedModule = (await screen.findByRole("link", { name: "AI Phishing Risks" })).closest("article");
-    const failedModule = screen.getByRole("link", { name: "Password hygiene" }).closest("article");
+    const completedModule = await screen.findByRole("row", { name: /AI Phishing Risks/ });
+    const failedModule = screen.getByRole("row", { name: /Password hygiene/ });
 
     expect(completedModule).toHaveTextContent("Completed");
-    expect(completedModule).toHaveTextContent("Best score: 80%");
+    expect(completedModule).toHaveTextContent("80%");
+    expect(completedModule).toHaveTextContent("14 Aug 2026");
     expect(failedModule).toHaveTextContent("Retake required");
-    expect(failedModule).toHaveTextContent("Best score: 50%");
+    expect(failedModule).toHaveTextContent("50%");
+    expect(failedModule).toHaveTextContent("15 Aug 2026");
   });
 
   it("offers Review for completed modules and Retake for failed attempts", async () => {
@@ -147,8 +169,9 @@ describe("Progress page", () => {
     renderProgressPage();
 
     expect(await screen.findByText("0%", { selector: "strong" })).toBeInTheDocument();
-    expect(screen.getByText("0 of 3 modules complete")).toBeInTheDocument();
-    expect(screen.getAllByText("Not started")).toHaveLength(3);
+    expect(screen.getByText("0 of 4 modules complete")).toBeInTheDocument();
+    expect(screen.getByText("0 completed · 0 retake required · 4 not started")).toBeInTheDocument();
+    expect(screen.getAllByText("Not started")).toHaveLength(4);
   });
 
   it("keeps the page usable when progress loading fails", async () => {
@@ -162,7 +185,7 @@ describe("Progress page", () => {
     renderProgressPage();
 
     expect(await screen.findByText("Unable to load training progress. Showing modules as not started.")).toBeInTheDocument();
-    expect(screen.getByRole("link", { name: "AI Phishing Risks" })).toBeInTheDocument();
+    expect(screen.getByRole("row", { name: /AI Phishing Risks/ })).toBeInTheDocument();
   });
 
   it("opens /progress from the authenticated header and marks it active", async () => {
