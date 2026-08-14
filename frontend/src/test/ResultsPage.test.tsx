@@ -53,16 +53,19 @@ describe("Results page", () => {
 
     expect(screen.getByRole("heading", { name: "Quiz complete" })).toBeInTheDocument();
     expect(screen.getByText("80%")).toBeInTheDocument();
-    expect(screen.getByRole("status")).toHaveTextContent(
-      "Great work — you demonstrated a strong understanding of this module.",
+    expect(screen.getByText("Great work — you demonstrated a strong understanding of this module.")).toHaveAttribute(
+      "role",
+      "status",
     );
   });
 
-  it("renders a next recommendation", () => {
+  it("renders the quiz module title alongside the result", () => {
     renderResults({ score: 80 });
 
+    expect(screen.getAllByText("AI Phishing Risks").length).toBeGreaterThan(0);
+    expect(screen.getByText("4 of 5 correct")).toBeInTheDocument();
     expect(screen.getByRole("heading", { name: "Next recommendation" })).toBeInTheDocument();
-    expect(screen.getByText("Return to your dashboard and continue your training.")).toBeInTheDocument();
+    expect(screen.getByText("Review this module before continuing your training.")).toBeInTheDocument();
   });
 
   it("returns the learner to the Dashboard", async () => {
