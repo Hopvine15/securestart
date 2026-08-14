@@ -64,7 +64,7 @@ pub enum UserProvisioning {
     Created,
 }
 
-pub async fn find_or_create_user<R: UserRepository>(
+pub async fn find_or_create_user<R: UserRepository + ?Sized>(
     repository: &R,
     auth0_sub: &str,
     email: &str,

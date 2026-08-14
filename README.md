@@ -282,6 +282,40 @@ I used feature tickets to turn security and core application behaviour into spec
 
 The repository uses separate `frontend/` and `backend/` folders within one repository. It is a separated full-stack application, not a microservices architecture.
 
+## Testing and coverage
+
+The frontend uses Vitest with React Testing Library and a mocked Auth0 client. The backend uses Rust unit and route-level tests with in-memory repository doubles, so validation does not require a live MongoDB instance or Auth0 tenant.
+
+Install the Rust coverage tool once with `cargo install cargo-llvm-cov --locked`, then run the checks from each application directory:
+
+```bash
+# frontend/
+npm run coverage
+
+# backend/
+cargo llvm-cov --all-targets --summary-only
+```
+
+Coverage was captured on 14 August 2026 after the test suites were expanded:
+
+| Application | Tests | Statements / regions | Branches | Functions | Lines |
+| ----------- | ----: | -------------------: | -------: | --------: | ----: |
+| Frontend | 48 | 96.67% | 85.85% | 85.29% | 96.67% |
+| Backend (all executable sources) | 36 | 41.13% | n/a | 56.99% | 44.24% |
+
+The backend total is a deliberately broad number, not a score for learner-facing API behaviour. It includes operational code that should be validated in deployment rather than unit tests: live MongoDB setup, production server start-up, Auth0 JWKS network verification and the standalone module-seeding binary.
+
+The API routes exercised by the automated tests have the following line coverage:
+
+| Learner-facing behaviour | Line coverage |
+| ------------------------ | ------------: |
+| Authenticated user provisioning (`/api/auth-test`) | 100.00% |
+| Module list, detail and quiz-question routes | 100.00% |
+| User-isolated progress route | 100.00% |
+| Server-scored quiz-attempt route | 98.39% |
+
+The user-provisioning route tests cover first login, repeat login without a duplicate user, unauthenticated rejection before storage access, and sanitised repository errors. This keeps the coverage focus on security-sensitive and user-visible behaviour while the live infrastructure path is verified separately during deployment.
+
 ## Repository structure
 
 ```text

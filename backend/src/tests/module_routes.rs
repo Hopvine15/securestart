@@ -120,7 +120,7 @@ async fn app_under_test(modules: Arc<dyn ModuleRepository>) -> Router {
         .await
         .expect("valid MongoDB URI");
     let state = AppState {
-        users: MongoUserRepository::new(mongo),
+        users: Arc::new(MongoUserRepository::new(mongo)),
         modules,
         quiz_attempts: Arc::new(UnavailableQuizAttemptRepository),
     };
