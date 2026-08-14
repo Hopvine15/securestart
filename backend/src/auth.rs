@@ -91,3 +91,80 @@ async fn verify_token(token: &str) -> Result<AuthenticatedUser, Box<dyn std::err
         email: token_data.claims.email,
     })
 }
+
+#[cfg(test)]
+mod tests {
+    use axum::{
+        extract::FromRequestParts,
+        http::{HeaderValue, Request, StatusCode, header::AUTHORIZATION},
+    };
+
+    use super::AuthenticatedUser;
+
+    async fn extract_user(
+        authorization: Option<HeaderValue>,
+    ) -> Result<AuthenticatedUser, (StatusCode, &'static str)> {
+        let mut request = Request::new(());
+
+        if let Some(authorization) = authorization {
+            request.headers_mut().insert(AUTHORIZATION, authorization);
+        }
+
+        let (mut parts, _) = request.into_parts();
+        AuthenticatedUser::from_request_parts(&mut parts, &()).await
+    }
+
+    #[tokio::test]
+    async fn missing_authorization_header_is_rejected() {
+        let rejection = extract_user(None)
+            .await
+            .expect_err("request should be rejected");
+
+        assert_eq!(
+            rejection,
+            (StatusCode::UNAUTHORIZED, "Missing Authorization header")
+        );
+    }
+
+    #[tokio::test]
+    async fn malformed_or_non_bearer_authorization_headers_are_rejected() {
+        for authorization in [
+            "Basic credentials",
+            "bearer valid-test-token",
+            "Bearer",
+            "Token valid-test-token",
+        ] {
+            let rejection = extract_user(Some(HeaderValue::from_static(authorization)))
+                .await
+                .expect_err("request should be rejected");
+
+            assert_eq!(
+                rejection,
+                (StatusCode::UNAUTHORIZED, "Invalid Authorization header")
+            );
+        }
+    }
+
+    #[tokio::test]
+    async fn non_utf8_authorization_header_is_treated_as_missing() {
+        let authorization = HeaderValue::from_bytes(b"Bearer \xff").expect("header value");
+        let rejection = extract_user(Some(authorization))
+            .await
+            .expect_err("request should be rejected");
+
+        assert_eq!(
+            rejection,
+            (StatusCode::UNAUTHORIZED, "Missing Authorization header")
+        );
+    }
+
+    #[tokio::test]
+    async fn valid_test_token_provides_the_expected_authenticated_user() {
+        let user = extract_user(Some(HeaderValue::from_static("Bearer valid-test-token")))
+            .await
+            .expect("test token should be accepted");
+
+        assert_eq!(user.sub, "auth0|test-user");
+        assert_eq!(user.email, "test@example.com");
+    }
+}

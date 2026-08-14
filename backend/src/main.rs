@@ -28,7 +28,7 @@ mod tests;
 
 #[derive(Clone)]
 pub struct AppState {
-    pub users: repositories::user_repository::MongoUserRepository,
+    pub users: Arc<dyn repositories::user_repository::UserRepository>,
     pub modules: Arc<dyn repositories::module_repository::ModuleRepository>,
     pub quiz_attempts: Arc<dyn repositories::quiz_attempt_repository::QuizAttemptRepository>,
 }
@@ -83,7 +83,9 @@ async fn main() {
     database::setup_indexes(&mongo).await;
 
     let state = AppState {
-        users: repositories::user_repository::MongoUserRepository::new(mongo.clone()),
+        users: Arc::new(repositories::user_repository::MongoUserRepository::new(
+            mongo.clone(),
+        )),
         modules: Arc::new(repositories::module_repository::MongoModuleRepository::new(
             mongo.clone(),
         )),
