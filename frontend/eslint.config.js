@@ -18,5 +18,17 @@ export default defineConfig([
     languageOptions: {
       globals: globals.browser,
     },
+    rules: {
+      "react-refresh/only-export-components": [
+        "error",
+        { extraHOCs: ["withAuthenticationRequired"] },
+      ],
+    },
+  },
+  {
+    files: ["src/main.tsx"],
+    rules: {
+      "react-refresh/only-export-components": "off",
+    },
   },
 ])
