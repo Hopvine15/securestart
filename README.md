@@ -7,67 +7,47 @@ SecureStart is a full-stack cybersecurity training application for **NovaShield 
 - **[Final Figma design](https://www.figma.com/design/1YWZ73QjdYHnsUwS8r77NQ/SecureStart-Design?node-id=10-6&p=f)**
 - **[Interactive desktop prototype](https://www.figma.com/proto/1YWZ73QjdYHnsUwS8r77NQ/SecureStart-Design?node-id=93-34&starting-point-node-id=93%3A34&scaling=scale-down&content-scaling=fixed)**
 - **[Interactive mobile prototype](https://www.figma.com/proto/1YWZ73QjdYHnsUwS8r77NQ/SecureStart-Design?node-id=93-1055&starting-point-node-id=93%3A1055&scaling=scale-down&content-scaling=fixed)**
-- **Live application:** n/a
+- **Live application: [securestart.onrender.com](https://securestart.onrender.com/)**
+- **API link: [securestart-api.onrender.com/swagger-ui/#](https://securestart-api.onrender.com/swagger-ui/#/)**
+- **Word count: 2,161 words**
 
 ## Contents
 
-1. [Product overview](#product-overview)
-2. [Product-design approach](#product-design-approach)
-3. [Why I selected Figma](#why-i-selected-figma)
-4. [Component-based design](#component-based-design)
-5. [Visual identity](#visual-identity)
-6. [Accessibility decisions](#accessibility-decisions)
-7. [Sustainability decisions](#sustainability-decisions)
-8. [User journey and interactions](#user-journey-and-interactions)
-9. [Responsive design and iteration](#responsive-design-and-iteration)
-10. [Planning and requirements](#planning-and-requirements)
-11. [Technical direction](#technical-direction)
-12. [Repository structure](#repository-structure)
-13. [Environment variables](#environment-variables)
+1. [Product Proposal &amp; Design](#1-product-proposal--design)
+2. [Planning &amp; Requirements](#2-planning--requirements)
+3. [Full-Stack Development](#3-full-stack-development)
+   - [3.1 Architecture overview](#31-architecture-overview)
+   - [3.2 Technology choices](#32-technology-choices)
+   - [3.3 Authentication and security](#33-authentication-and-security)
+   - [3.4 API and persistence](#34-api-and-persistence)
+   - [3.5 Implemented learner flow](#35-implemented-learner-flow)
+4. [Testing &amp; Deployment](#4-testing--deployment)
+   - [4.2 Representative TDD cycle](#42-representative-tdd-cycle)
+   - [4.3 Coverage and behavioural testing](#43-coverage-and-behavioural-testing)
+   - [4.4 Continuous integration and deployment](#44-continuous-integration-and-deployment)
+5. [Evaluation](#5-evaluation)
 
-## Product overview
+## 1. Product Proposal & Design
 
-Organisations are increasingly adopting AI tools, but employees may not fully understand the risks of AI-generated code, phishing, weak authentication, data leakage or over-trusting AI output.
+### 1.1 Product overview
 
-SecureStart addresses this through a focused learning journey:
+**NovaShield Learning** is a fictional digital training company helping organisations teach employees safe software and AI-assisted working practices. As workplace AI use grows, junior developers and non-technical employees may not fully understand risks including insecure generated code, phishing, weak authentication and data leakage.
 
-- short cybersecurity modules
-- realistic scenario-based quiz questions
-- immediate results and feedback
-- progress tracking through a personal dashboard
-- authentication through Auth0 Universal Login.
+**SecureStart** addresses this through short cybersecurity modules, scenario-based quizzes and progress tracking. Users authenticate through Auth0, complete training and receive quiz feedback, giving organisations a lightweight way to support safer use of AI and software tools.
 
-The main users are junior developers using AI coding tools, non-technical staff using AI at work, and team leads who need lightweight visibility of training completion.
+### 1.2 Product-design approach
 
-## Product-design approach
-
-I developed the design iteratively rather than drawing each screen independently. I worked through five connected layers:
-
-1. **Foundations** - brand colours, typography, spacing, radii, icon treatment and accessibility principles.
-2. **Components** - reusable buttons, badges, progress indicators, navigation items, alerts and quiz controls.
-3. **Patterns and templates** - combinations such as the product header, module card, quiz panel and authentication prompt.
-4. **Responsive screens** - landing, dashboard, module, quiz and results layouts for desktop and mobile.
-5. **Interactive prototype** - the happy path and key alternative states were connected and tested as one journey.
-
-Working this way let me test decisions at a smaller level before repeating them across the application. It also made changes such as the logo refinement easier to apply consistently across the screens and prototype.
+I designed SecureStart iteratively through five connected layers: foundations, reusable components, patterns and templates, responsive screens, and an interactive prototype. Foundations defined colours, typography and accessibility; reusable components established consistent interface structures; responsive screens applied them across desktop and mobile; and the prototype connected the learner journey. This made later logo and responsive refinements easier to apply consistently.
 
 ![SecureStart Figma foundations page showing the colour palette, typography, spacing and visual design rules](./assets/1-product-proposal-design/securestart-foundations.png)
 
-*Figure 1. SecureStart foundations defining the shared visual and accessibility rules used by the later components and screens.*
+*Figure 1. SecureStart foundations defining the shared visual and accessibility rules used by later components and screens.*
 
-## Why I selected Figma
+### 1.3 Why I selected Figma
 
-I selected Figma because it let me define reusable variables, components and configurations within the same design file.
+I selected Figma because it supported SecureStart's design system, responsive screens and interactive prototype in one place. Components, variants and variables kept colours, spacing and repeated elements consistent, while side-by-side desktop and mobile layouts helped me review navigation and branding before implementation. Named components and design tokens also provided a practical reference for React development.
 
-- **Reusable design system:** I could define components, variants and variables once and reuse them.
-- **Responsive exploration:** I could compare desktop and mobile frames in the same file.
-- **Interactive prototyping:** I could connect screens into a realistic user journey before implementation.
-- **Iteration:** I could review branding, navigation and component states before development.
-- **Development hand-off:** named layers, components and design tokens provide a reference for the React implementation.
-
-This kept the design system, screen layouts and prototype behaviour in one place.
-
-## Component-based design
+### 1.4 Component-based design
 
 SecureStart uses a layered, component-based approach:
 
@@ -83,315 +63,309 @@ SecureStart uses a layered, component-based approach:
 
 *Figure 2. Reusable interface components created from the shared foundations before being applied to complete screens.*
 
-I combined the individual components into reusable patterns and templates before building full screens. This kept repeated structures such as product headers, module cards and quiz panels consistent.
+Components were combined into reusable patterns before full screens were built, keeping headers, module cards and quiz panels consistent.
 
 ![SecureStart patterns and templates page showing assembled headers, module cards, quiz panels and authentication messaging](./assets/1-product-proposal-design/securestart-patternstemplates-design.png)
 
 *Figure 3. Components combined into repeatable patterns and templates before full-screen design.*
 
-I reused the same component language across different contexts. Status uses a badge, label and visual treatment rather than colour alone, while progress bars use the same structure on cards and summary panels. This reduces visual inconsistency and maps more directly to reusable React components.
+Status information combines text, icons and colour rather than relying on colour alone, while progress indicators use the same structure across cards and summary views. This maps directly to reusable React components.
 
-## Visual identity
+### 1.5 Visual identity
 
-**NovaShield Learning** is the fictional parent company and **SecureStart** is its cybersecurity training product. The relationship is shown through an endorsement text “A NovaShield Learning product” or “by NovaShield”, while SecureStart remains the primary name inside the application.
+**NovaShield Learning** is the fictional parent company and **SecureStart** its cybersecurity training product. SecureStart remains the primary product name, supported by a NovaShield endorsement. The identity uses Manrope, a dark navy base, electric teal for primary actions and progress, violet as an accent, and a custom shield mark.
 
-The identity uses:
-
-- **Manrope** for a clear and modern interface;
-- a dark navy base to communicate trust and security;
-- electric teal as the primary action and progress colour;
-- violet as a supporting brand accent;
-- simple geometric interface icons;
-- a custom shield mark for product branding.
-
-![SecureStart multiple logo options - based from shield customisation in a mobile game](./assets/1-product-proposal-design/securestart-logo-designs.png)
+![SecureStart multiple logo options based on shield customisation in a mobile game](./assets/1-product-proposal-design/securestart-logo-designs.png)
 
 *Figure 4. SecureStart shield explorations and the final logo selected for the product identity.*
 
-I created the SecureStart shield, using existing shield logos and patterns as visual references. I looked at examples such as the Clash of Clans badge system, especially how bold outlines and simple internal shapes remain  distinctive at small sizes. I explored three variations of shield pattern's before choosing the final design.
+I tested three shield variations before selecting a simpler design with a stronger outline so it remained recognisable at smaller sizes. Conventional icons are reserved for functional actions so branding is not confused with interactive controls.
 
-The final logo system includes:
+### 1.6 Accessibility decisions
 
-- a full logo with the parent-brand endorsement;
-- a standard icon-and-wordmark lock-up for headers;
-- a compact shield mark for small spaces.
+Accessibility was considered from the foundations stage. SecureStart uses strong foreground/background contrast, clear action labels and consistent navigation. Status and progress combine text, icons and colour so meaning does not rely on colour alone.
 
-Functional interface actions continue to use simple icons, while the custom shield is reserved for SecureStart branding.
+Responsive layouts preserve logical content order and usable touch targets, while selected, completed, disabled and error states remain distinguishable. Further keyboard and screen-reader testing would be needed beyond completed visual and behavioural checks.
 
-## Accessibility decisions
+### 1.7 Sustainability decisions
 
-I considered accessibility from the foundations stage rather than adding it after the screens were complete.
+I considered sustainability by limiting unnecessary design, development and runtime overhead. SecureStart was kept to a focused MVP rather than expanding into non-essential administration, certificate or analytics features.
 
-- Text and controls use strong foreground/background contrast.
-- Information is not communicated through colour alone; badges include labels and icons.
-- Buttons use clear action wording such as **Start module**, **Continue** and **Submit answer**.
-- Navigation placement and visual hierarchy remain consistent across authenticated screens.
-- Focus, disabled, selected, completed and error states are designed to remain distinguishable.
-- Content follows a logical order that is preserved when it stacks on mobile.
-- The logo was kept simple so it remains legible at all sizes.
-- Heavy motion and unnecessary animation are avoided.
-- Auth0 Universal Login is treated as an external authentication step and should be configured with readable labels and accessible brand colours.
+Reusable components, simple shapes and vector icons reduce duplicated code and heavy media. Unnecessary animation is avoided and data is requested only when needed, keeping the product simpler to maintain and operate.
 
-These choices support accessibility, although the implemented application will still require keyboard, screen-reader and automated contrast testing.
+### 1.8 User journey and interactions
 
-## Sustainability decisions
+The primary learner journey moves from the landing page through Auth0 authentication, dashboard, module, quiz and results before returning to an updated dashboard. This keeps the application focused on completing training and seeing progress.
 
-I kept the design focused on avoiding unnecessary digital and development overhead.
-
-- Reusable components reduce duplicated design and frontend code.
-- A focused MVP avoids designing and building unused features.
-- Screens use simple shapes, typography and lightweight vector icons instead of large media assets.
-- Unnecessary animation and heavy visual effects are avoided.
-- The flat vector shield can scale without separate raster assets for each size.
-- Responsive layouts reuse the same content and component structure rather than creating unrelated mobile experiences.
-- Data is intended to be requested only when required for each screen.
-- Auth0 reduces the amount of security-critical authentication code that must be built, tested and maintained.
-
-Sustainability is therefore treated as a combination of efficient interface assets, maintainable implementation and controlled project scope.
-
-## User journey and interactions
-
-The primary journey is:
-
-1. The user opens the SecureStart landing page.
-2. They select **Log in** or **Get started**.
-3. SecureStart redirects them to Auth0 Universal Login.
-4. After authentication, the user returns to the dashboard.
-5. They choose a training module.
-6. They read the module and start the quiz.
-7. They select answers and submit the quiz.
-8. The results page shows the score, feedback and next recommendation.
-9. The user returns to an updated dashboard showing new progress.
+| Screen    | Key interaction                                       |
+| --------- | ----------------------------------------------------- |
+| Landing   | User selects**Log in** or **Get started** |
+| Auth0     | User signs in through Universal Login                 |
+| Dashboard | User selects a training module                        |
+| Module    | User reads the content and starts the quiz            |
+| Quiz      | User selects answers and submits                      |
+| Results   | Score, feedback and next action are displayed         |
+| Dashboard | Stored progress is reflected in the interface         |
 
 ![SecureStart user journey diagram showing landing, Auth0 redirect, dashboard, module, quiz, results and updated dashboard](./assets/1-product-proposal-design/securestart-user-journey.png)
 
-*Figure 5. Primary user journey, including the external Auth0 authentication step and the updated dashboard state.*
+*Figure 5. Primary user journey, including the external Auth0 authentication step and updated dashboard state.*
 
-Key prototype interactions include:
-
-- landing-page actions that open the represented Auth0 redirect step;
-- module cards and calls to action that open the selected module;
-- a module-to-quiz transition;
-- answer selection;
-- incomplete-quiz validation;
-- quiz submission and results;
-- return to the updated dashboard;
-- separate desktop and mobile starting points.
+The prototype also covers answer selection, incomplete-quiz validation and separate desktop and mobile starting points. Authentication is represented as an external redirect because credential handling takes place through Auth0 Universal Login.
 
 ![SecureStart interactive prototype overview showing the primary journey from landing page to updated dashboard](./assets/1-product-proposal-design/securestart-prototype-flow.png)
 
-*Figure 6. Interactive prototype flow connecting the primary journey and allowing the key interactions to be reviewed before implementation.*
+*Figure 6. Interactive prototype connecting the primary learner journey and key alternative states before implementation.*
 
-I represented authentication as an external step because SecureStart does not collect or store passwords.
+### 1.9 Responsive design and iteration
 
-## Responsive design and iteration
-
-I designed the desktop layouts around a 1280 px application viewport and used 375 px mobile checkpoints.
-
-The mobile designs do not simply shrink the desktop screens. They:
-
-- stack cards and content into one reading column;
-- simplify the product header;
-- keep the most important progress information visible;
-- retain the same content order and actions;
-- increase wrapping where needed rather than reducing text to unreadable sizes;
-- keep buttons large enough to remain clear touch targets.
+SecureStart was designed around a **1280 px desktop viewport** and **375 px mobile checkpoint**. Mobile layouts stack content into one reading column, simplify the product header and retain the same content order and primary actions.
 
 ![SecureStart responsive landing-page designs displayed at desktop and mobile widths](./assets/1-product-proposal-design/securestart-screens-design.png)
 
 *Figure 7. Landing-page designs showing how the product introduction, branding and feature cards adapt between desktop and mobile layouts.*
 
-I first checked components in isolation, then combined them into patterns and full screens. I compared desktop and mobile layouts, added alternative quiz states and replaced the original detailed logo with a simpler mark after testing it at small sizes.
+I compared desktop and mobile screens throughout prototyping. This led to simplified mobile navigation, additional quiz states and refinement of the original shield after it proved too detailed at smaller sizes.
 
 ![SecureStart responsive dashboard designs showing desktop and mobile progress summaries and training module cards](./assets/1-product-proposal-design/securestart-dashboard-responsive.png)
 
 *Figure 8. Dashboard iteration showing the same progress information and training modules reorganised for desktop and mobile layouts.*
 
-## Planning and requirements
+## 2. Planning & Requirements
 
-### Project management approach
+### 2.1 Project management approach
 
-I use **GitHub Projects** to manage SecureStart because it keeps the project board, issues, branches and pull requests connected to the same repository. This gives me traceability between requirements and their implementation without maintaining a separate project-management system.
+I used **GitHub Projects** because it keeps requirements, issues, branches and pull requests connected to the same repository, providing traceability from planned work through implementation and review.
 
-I use a Kanban-style workflow with **Backlog**, **In progress**, **In review** and **Done** states. Priority and size fields help me distinguish the importance and scope of work, and I move tickets across the board as development progresses.
+I organised work using **Backlog**, **In progress**, **In review** and **Done** states, supported by priority and size fields. This helped separate essential MVP work from lower-priority enhancements and provided a clear view of progress throughout development.
 
 ![SecureStart GitHub Projects board during the product-design phase, showing completed foundation work alongside design tasks in progress](./assets/2-planning-requirements/securestart-github-project-board-design-phase.png)
 
 *Figure 9. SecureStart project board during the design phase, showing the completed foundation work and product-design tasks in progress.*
 
-At this stage, the repository foundation was complete and the product-design epic had moved into active development.
+The board was updated throughout the project rather than being used only for initial planning. By the final review, 31 items had been completed across the main SecureStart epics.
 
-### Epic and ticket structure
+![Final SecureStart GitHub Projects board showing completed product-design, authentication, training-module, dashboard and quiz epics](./assets/2-planning-requirements/securestart-final-project-board.png)
 
-I organised the work into **epics** representing larger project outcomes, with smaller implementation tickets linked underneath them. Each ticket has acceptance criteria so I can judge completion against observable outcomes rather than whether code has simply been written.
+*Figure 10. Final project-board state showing the progression of the main epics from early development to completion or review.*
 
-The first completed epic was **Foundation – Repository & Environment Setup**. Its purpose was to establish the repository structure and environment configuration required before feature development could begin.
+### 2.2 Epic and ticket structure
+
+I organised SecureStart into epics representing larger project outcomes, with smaller implementation tickets linked beneath them. The seven epics covered **Foundation – Repository & Environment Setup**, **Product Design & Prototype**, **Authentication**, **Training Modules**, **Dashboard & Progress Tracking**, **Quiz & Scoring**, and **Testing & Deployment**.
+
+![SecureStart epic overview showing all seven project epics, their linked sub-issues and final completion status](./assets/2-planning-requirements/securestart-epics-overview.png)
+
+*Figure 11. SecureStart epic overview showing all seven project epics, their linked sub-issues and final completion status.*
+
+Each ticket contained acceptance criteria defining observable conditions required for completion. This kept individual tasks small enough to implement and test independently while each epic represented a broader project objective.
 
 ![Completed Foundation repository and environment setup epic showing both child tickets closed and the epic acceptance criteria satisfied](./assets/2-planning-requirements/foundation-epic-complete.png)
 
-*Figure 10. Completed Foundation epic containing the repository-structure and environment-configuration child tickets.*
+*Figure 12. Completed Foundation epic demonstrating how smaller implementation tickets contribute to a larger project outcome.*
 
-Separating repository setup from environment configuration kept the individual tasks small and independently testable, while the epic still represented the larger setup objective.
+### 2.3 Acceptance criteria and definition of done
 
-### Acceptance criteria and definition of done
-
-The repository setup ticket required separate React/Vite `frontend/` and Rust/Axum `backend/` folders, Git-ignored environment files and a root README.
-
-![Completed repository setup ticket showing its checked acceptance criteria](./assets/2-planning-requirements/respository-setup-ticket-complete.png)
-
-*Figure 11. Repository setup ticket after its specific acceptance criteria were satisfied.*
-
-I kept environment configuration as a separate setup ticket. Its acceptance criteria required the frontend and backend variable names to be documented, `.env.example` templates to be provided and real secrets to remain outside version control.
+Acceptance criteria were written to describe testable outcomes rather than simply stating that code should be created. The environment configuration ticket required documented frontend and backend variables, `.env.example` templates and real secrets to remain outside version control.
 
 ![Completed environment configuration ticket showing documented frontend and backend variables and secret-handling acceptance criteria](./assets/2-planning-requirements/environment-configruation-ticket-complete.png)
 
-*Figure 12. Environment configuration ticket demonstrating testable requirements for configuration and secret handling.*
+*Figure 13. Representative ticket demonstrating testable acceptance criteria for configuration and secret handling.*
 
-I consider a ticket complete when its acceptance criteria are met, relevant tests pass, the work is committed to GitHub and the documentation is updated where needed. This gives each ticket a consistent completion standard.
+A ticket was considered complete when its acceptance criteria were satisfied, relevant tests passed, the implementation was committed and documentation was updated where required.
 
-### Branch and pull-request workflow
+### 2.4 Branch and pull-request workflow
 
-I carry out implementation work on a dedicated branch and merge it into `main` through a pull request. I link related issues to the pull request so the completed code can be traced back to its requirements.
-
-I completed the initial foundation work on the `setup/foundation-setup` branch and merged it through pull request **#30**. The pull request contained separate commits for the React/Vite frontend scaffold, Rust/Axum backend scaffold and environment-variable documentation.
+Implementation work was completed on dedicated branches and merged into `main` through pull requests, with related issues linked so changes remained traceable to their requirements.
 
 ![Merged foundation setup pull request showing related setup issues and individual implementation commits](./assets/2-planning-requirements/foundation-setup-pull-requrest-merged.png)
 
-*Figure 13. Foundation setup pull request linking completed implementation work back to the relevant GitHub issues.*
+*Figure 14. Foundation setup pull request linking completed implementation work back to the relevant GitHub issues.*
 
-### Representative feature requirements
+### 2.5 Representative requirements and scope control
 
-I used feature tickets to turn security and core application behaviour into specific, testable requirements.
+Security-sensitive requirements were also expressed as tickets. For example, Auth0 token verification required signature, issuer, audience and expiry checks before protected data access, while quiz-attempt requirements defined server-side scoring and authenticated-user persistence.
 
-- **#11 – Verify Auth0 tokens in the backend:** I used this ticket to make sure JWT signature, issuer, audience and expiry are checked before protected data is accessed, with invalid tokens returning safe errors.
-- **#20 – Build quiz attempts and scoring API:** I used this ticket to define how quiz attempts are submitted and stored, with each attempt linked to the authenticated user and the final score calculated on the backend.
+To keep the project achievable within the coursework timeframe, the MVP intentionally excluded features such as an admin dashboard, certificates, leaderboards, role-based permissions and advanced analytics. This kept development focused on the core authenticated learner journey while leaving non-essential features for future iterations.
 
-## Technical direction
+## 3. Full-Stack Development
 
-| Layer            | Technology                                          |
-| ---------------- | --------------------------------------------------- |
-| Frontend         | React + Vite                                        |
-| Backend          | Rust + Axum                                         |
-| Database         | MongoDB Atlas                                       |
-| Authentication   | Auth0 using OIDC and hosted Universal Login         |
-| Frontend testing | Vitest + React Testing Library                      |
-| Backend testing  | Rust test framework with route-level test utilities |
-| CI/CD            | GitHub Actions                                      |
-| Frontend hosting | Vercel                                              |
-| Backend hosting  | Render                                              |
+### 3.1 Architecture overview
 
-The repository uses separate `frontend/` and `backend/` folders within one repository. It is a separated full-stack application, not a microservices architecture.
+SecureStart uses a separated **client-server architecture** within a single repository. The React/Vite frontend is deployed as a Render static site and communicates with a Rust/Axum REST API hosted separately on Render. **MongoDB Atlas** provides persistence, while **Auth0** handles authentication and identity.
 
-## Testing and coverage
+Protected frontend requests include an Auth0 access token. The Axum API verifies the token before any protected database access, ensuring the frontend never communicates directly with MongoDB.
 
-The frontend uses Vitest with React Testing Library and a mocked Auth0 client. The backend uses Rust unit and route-level tests with in-memory repository doubles, so validation does not require a live MongoDB instance or Auth0 tenant.
-
-Install the Rust coverage tool once with `cargo install cargo-llvm-cov --locked`, then run the checks from each application directory:
-
-```bash
-# frontend/
-npm run coverage
-
-# backend/
-cargo llvm-cov --all-targets --summary-only
+```mermaid
+flowchart LR
+    User[User Browser] --> Frontend[React + Vite Frontend<br/>Render Static Site]
+    Frontend -->|Login redirect| Auth0[Auth0 Universal Login]
+    Frontend -->|HTTPS + Bearer Token| API[Rust + Axum REST API<br/>Render]
+    API -->|Read / Write| DB[(MongoDB Atlas)]
+    API -.->|JWKS verification| Auth0
 ```
 
-Coverage was captured on 14 August 2026 after the test suites were expanded:
+*Figure 15. SecureStart high-level architecture showing the frontend, Auth0, Axum API and MongoDB Atlas.*
 
-| Application | Tests | Statements / regions | Branches | Functions | Lines |
-| ----------- | ----: | -------------------: | -------: | --------: | ----: |
-| Frontend | 48 | 96.67% | 85.85% | 85.29% | 96.67% |
-| Backend (all executable sources) | 36 | 41.13% | n/a | 56.99% | 44.24% |
+### 3.2 Technology choices
 
-The backend total is a deliberately broad number, not a score for learner-facing API behaviour. It includes operational code that should be validated in deployment rather than unit tests: live MongoDB setup, production server start-up, Auth0 JWKS network verification and the standalone module-seeding binary.
+| Layer          | Technology     | Reason                                                                |
+| -------------- | -------------- | --------------------------------------------------------------------- |
+| Frontend       | React + Vite   | Reusable interactive components and lightweight build tooling         |
+| Backend        | Rust + Axum    | Strong typing, explicit error handling and REST routing               |
+| Database       | MongoDB Atlas  | Flexible document storage for users, modules and quiz attempts        |
+| Authentication | Auth0 / OIDC   | Delegates credential handling while allowing backend JWT verification |
+| Hosting        | Render         | Separate deployment of static frontend and API                        |
+| CI/CD          | GitHub Actions | Automated testing, coverage and production builds                     |
 
-The API routes exercised by the automated tests have the following line coverage:
+React suited SecureStart because repeated interface elements such as module cards, quiz controls and progress indicators map naturally to reusable components. I selected **Rust with Axum** for the backend because Rust's type system and explicit error handling support predictable behaviour in security-sensitive API code.
 
-| Learner-facing behaviour | Line coverage |
-| ------------------------ | ------------: |
-| Authenticated user provisioning (`/api/auth-test`) | 100.00% |
-| Module list, detail and quiz-question routes | 100.00% |
-| User-isolated progress route | 100.00% |
-| Server-scored quiz-attempt route | 98.39% |
+MongoDB suited the document-based training modules and learner records without requiring the frontend to embed or manage training data directly.
 
-The user-provisioning route tests cover first login, repeat login without a duplicate user, unauthenticated rejection before storage access, and sanitised repository errors. This keeps the coverage focus on security-sensitive and user-visible behaviour while the live infrastructure path is verified separately during deployment.
+### 3.3 Authentication and security
 
-The [CI workflow](./.github/workflows/ci.yml) runs these coverage checks, frontend linting and production builds for both applications on every push and pull request targeting `main`.
+I delegated authentication to **Auth0** rather than building password storage and token issuance myself. I also considered a self-built bcrypt/JWT approach and Clerk. Auth0 was selected because its standards-based OIDC model allowed the Rust backend to verify tokens using standard JWT/JWKS handling while credential storage, password reset and account security remained with a specialist provider.
 
-## Repository structure
+The trade-off is dependency on a third-party identity service and redirect-based login, which I accepted to reduce the amount of security-critical authentication code maintained by SecureStart.
 
-```text
-securestart/
-├── assets/
-│   ├── 1-product-proposal-design/
-│   │   ├── securestart-components-design.png
-│   │   ├── securestart-dashboard-responsive.png
-│   │   ├── securestart-foundations.png
-│   │   ├── securestart-patternstemplates-design.png
-│   │   ├── securestart-prototype-flow.png
-│   │   ├── securestart-screens-design.png
-│   │   └── securestart-user-journey.png
-│   └── 2-planning-requirements/
-│       ├── environment-configruation-ticket-complete.png
-│       ├── foundation-epic-complete.png
-│       ├── foundation-setup-pull-requrest-merged.png
-│       ├── initial-repository-structure.png
-│       ├── respository-setup-ticket-complete.png
-│       └── securestart-github-project-board-design-phase.png
-├── backend/
-├── frontend/
-├── architecture-notes.md
-├── planning.md
-├── product-notes.md
-├── user-journey.md
-└── README.md
+```mermaid
+sequenceDiagram
+    participant U as User
+    participant F as React Frontend
+    participant A as Auth0
+    participant B as Axum API
+    participant D as MongoDB
+
+    U->>F: Select Log in
+    F->>A: Redirect to Universal Login
+    A-->>F: Return authenticated session and access token
+    F->>B: Protected request + Bearer token
+    B->>A: Fetch/cache public keys (JWKS)
+    B->>B: Verify signature, issuer, audience and expiry locally
+    B->>D: Access authenticated user's data
+    D-->>B: Return data
+    B-->>F: Protected response
 ```
 
-![SecureStart repository after the foundation setup, showing separate frontend and backend directories and the root README](./assets/2-planning-requirements/initial-repository-structure.png)
+*Figure 16. Authentication sequence showing Auth0 login and backend JWT verification before MongoDB access.*
 
-*Figure 14. Repository structure created as the implementation outcome of the Foundation setup epic.*
+On first authenticated access, the backend provisions a local user keyed by the Auth0 `sub` claim and reuses that record on later requests. Passwords are never stored by SecureStart. Protected routes reject missing or invalid tokens with sanitised errors, CORS restricts requests to the deployed frontend, secrets remain in environment variables and production traffic uses HTTPS.
 
-## Environment variables
+### 3.4 API and persistence
 
-Each application folder includes a Git-tracked `.env.example` template. Copy each template and provide the real local values:
+SecureStart exposes protected REST endpoints for training modules, quiz attempts and learner progress. Repository interfaces separate route behaviour from MongoDB access, which also allows the same API behaviour to be tested using in-memory repositories.
 
-```bash
-cp backend/.env.example backend/.env
-cp frontend/.env.example frontend/.env
-```
+![Deployed Swagger documentation showing the protected SecureStart API routes](./assets/3-full-stack-development/securestart-api-swagger-auth-and-modules.png)
 
-Real `.env` files are ignored by Git; only the example templates are committed.
+*Figure 17. Deployed Swagger documentation showing the protected SecureStart API routes.*
 
-### Seed training modules
+Training content is stored in MongoDB and seeded through an idempotent command that upserts the four MVP modules without creating duplicates.
 
-After configuring `backend/.env`, seed the initial cybersecurity modules explicitly:
+![MongoDB Atlas collection containing the four seeded SecureStart training modules](./assets/3-full-stack-development/securestart-mongodb-modules-seeded.png)
 
-```bash
-cd backend
-cargo run --bin seed_modules
-```
+*Figure 18. MongoDB Atlas collection containing the four seeded SecureStart training modules.*
 
-The command upserts the four MVP modules by their application-facing `id`, so it
-can be run again to update the same records without creating duplicates. It does
-not run when the API starts.
+Quiz answers are submitted to the Axum API rather than scored in the browser. The backend validates the submission, calculates the score, associates the attempt with the authenticated user and stores it for later progress queries. This prevents the client from deciding its own result and keeps progress isolated between users.
 
-### `backend/.env.example`
+### 3.5 Implemented learner flow
 
-```dotenv
-AUTH0_DOMAIN=         # Auth0 tenant domain
-AUTH0_AUDIENCE=       # Auth0 API identifier the token must match
-MONGODB_URI=          # MongoDB Atlas connection string
-PORT=                 # Port used by the Axum API
-CORS_ORIGIN=          # Deployed frontend URL allowed by CORS
-```
+The React frontend combines module data with the authenticated learner's stored progress. Completion, best-score and retake states therefore reflect persisted API data rather than static interface values.
 
-### `frontend/.env.example`
+![Implemented dashboard presenting API-backed progress for the authenticated learner](./assets/3-full-stack-development/securestart-dashboard-progress-implementation.png)
 
-```dotenv
-VITE_AUTH0_DOMAIN=    # Auth0 tenant domain
-VITE_AUTH0_CLIENT_ID= # Auth0 SPA application client ID
-VITE_AUTH0_AUDIENCE=  # Auth0 API identifier
-VITE_API_URL=         # Backend API base URL
-```
+*Figure 19. Implemented dashboard presenting API-backed progress for the authenticated learner.*
 
-I use `.env.example` files to document the required configuration without committing real secrets.
+The implemented interface also retains the responsive behaviour established during prototyping, reorganising the same learner content for smaller screens without changing the underlying workflow.
+
+After quiz submission, the results page displays the server-calculated score, feedback and next action.
+
+![Implemented SecureStart desktop and mobile results views displaying the persisted server-scored quiz outcome](./assets/3-full-stack-development/securestart-results-responsive-implementation.png)
+
+*Figure 20. Implemented SecureStart desktop and mobile results views demonstrating responsive behaviour and the persisted server-scored quiz outcome.*
+
+Together, these views demonstrate the working **React → Axum → MongoDB** learner flow with Auth0 protecting the data boundary.
+
+## 4. Testing & Deployment
+
+### 4.1 Testing approach
+
+The frontend uses **Vitest with React Testing Library** to test rendered components and learner behaviour rather than implementation details. Auth0 is mocked so tests can exercise authenticated and unauthenticated states without depending on the live identity provider.
+
+Backend tests use Rust's test framework with in-memory repository and authentication doubles. Route-level requests therefore pass through the Axum router without requiring MongoDB Atlas or Auth0, allowing API behaviour, security boundaries and error handling to be tested in isolation.
+
+### 4.2 Representative TDD cycle
+
+Below is the progress API as an example of my **RED -> GREEN** cycle. Five tests were written first to define the required empty state, user isolation, best-score aggregation, sanitised repository failures and rejection of unauthenticated requests before database access. All five initially failed because the required route behaviour had not yet been implemented.
+
+![Five progress API route tests failing before the feature was implemented](./assets/4-testing/securestart-progress-api-red-tests-detailed.png)
+
+*Figure 21. TDD RED: the five progress-route requirements failing before implementation.*
+
+After implementing the authenticated route and repository behaviour, the same five tests passed.
+
+![The same five progress API route tests passing after implementation](./assets/4-testing/securestart-progress-api-green-tests.png)
+
+*Figure 22. TDD GREEN: the same progress-route requirements passing after implementation.*
+
+This provides a direct trace between expected behaviour and the completed implementation.
+
+### 4.3 Coverage and behavioural testing
+
+| Application                      | Tests | Statements / regions | Branches | Functions |  Lines |
+| -------------------------------- | ----: | -------------------: | -------: | --------: | -----: |
+| Frontend                         |    48 |               96.67% |   85.85% |    85.29% | 96.67% |
+| Backend (all executable sources) |    36 |               41.13% |      n/a |    56.99% | 44.24% |
+
+| Learner-facing behaviour                             | Line coverage |
+| ---------------------------------------------------- | ------------: |
+| Authenticated user provisioning (`/api/auth-test`) |       100.00% |
+| Module list, detail and quiz-question routes         |       100.00% |
+| User-isolated progress route                         |       100.00% |
+| Server-scored quiz-attempt route                     |        98.39% |
+
+The final frontend suite contains **48 tests** with **96.67% statement coverage**. Tests cover authentication-aware requests, module navigation, quiz interaction, validation, results and progress states.
+
+The backend contains **36 tests**. Its overall **44.24% line coverage** includes infrastructure and operational code outside the isolated route tests, including MongoDB start-up, Auth0 JWKS networking and module seeding. Learner-facing API routes tested directly achieve approximately **98–100% line coverage**, including user provisioning, modules, progress and server-side quiz scoring.
+
+![Final frontend Vitest run showing all eight test files and 48 tests passing](./assets/4-testing/securestart-frontend-full-suite-green-48-tests.png)
+
+*Figure 23. Final frontend suite covering component behaviour and the main learner routes.*
+
+### 4.4 Continuous integration and deployment
+
+GitHub Actions runs frontend and backend checks on pushes and pull requests targeting `main`, including automated tests, coverage, frontend linting and production builds. This provides automated feedback before changes are merged.
+
+![Successful GitHub Actions workflow showing completed frontend and backend checks](./assets/4-testing/securestart-github-actions-ci-success.png)
+
+*Figure 24. GitHub Actions confirming successful frontend and backend checks on the deployment pull request.*
+
+The React frontend and Axum API are deployed separately on **Render**, with MongoDB Atlas providing persistence and deployment configuration stored outside version control. The live application and Swagger API links at the top of the README provide access to the completed system.
+
+## 5. Evaluation
+
+### 5.1 Design and implementation
+
+SecureStart achieved its main goal of providing a complete learner journey from authentication through training modules, quizzes, results and progress tracking. The component-based Figma approach translated effectively into React, particularly for repeated structures such as module cards, quiz controls and progress states.
+
+Using **Rust with Axum** required more learning than the React frontend, especially around error handling and shared application state. This increased development time, but Rust's explicit types and error handling helped make backend behaviour predictable and encouraged clearer handling of failure cases.
+
+### 5.2 Security and testing
+
+Delegating authentication to **Auth0** was effective because SecureStart did not need to store passwords or implement credential-management flows itself. The backend still retained control of authorisation by verifying tokens before protected data access.
+
+Repository abstractions also proved useful because routes could be tested without requiring live MongoDB or Auth0 services. Server-side quiz scoring was another important decision because the frontend cannot determine or persist its own result, helping protect the integrity of learner progress data.
+
+Automated testing and GitHub Actions provided useful regression protection. However, overall backend coverage remains lower than the frontend because operational code such as MongoDB start-up, JWKS networking and module seeding is not exercised as heavily by the isolated route tests.
+
+### 5.3 Limitations and future improvements
+
+The current MVP contains only four seeded training modules and has no administrative interface for managing content. Future development could expand the number of training modules, introduce configurable quiz pass thresholds and improve the progress experience.
+
+Accessibility could also be evaluated further through dedicated keyboard and screen-reader testing. Stronger automated integration testing against deployed services would provide additional confidence in infrastructure and external-service behaviour.
+
+### 5.4 AI Usage Statement
+
+I used **Claude** on approximately two to three occasions to support debugging during development. For example, when the backend could not connect to MongoDB Atlas, Claude helped me interpret the console error and identify that my current IP address needed to be added to the MongoDB Atlas network access allowlist. I applied and verified the configuration change myself.
+
+![Claude-assisted MongoDB debugging exchange showing the Rust backend connection error and suggested troubleshooting checks](./assets/5-evaluation/securestart-ai-mongodb-debugging-support.png)
+
+*Figure 25. Example of AI-assisted debugging used to investigate the MongoDB Atlas connection error and identify relevant configuration checks.*
