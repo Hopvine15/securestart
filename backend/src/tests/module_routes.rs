@@ -14,7 +14,11 @@ use tower::ServiceExt;
 use crate::{
     AppState,
     models::training_module::{QuestionOption, QuizQuestion, TrainingModule},
-    repositories::{module_repository::ModuleRepository, user_repository::MongoUserRepository},
+    repositories::{
+        module_repository::ModuleRepository,
+        quiz_attempt_repository::UnavailableQuizAttemptRepository,
+        user_repository::MongoUserRepository,
+    },
     routes::modules::{get_module_by_id, get_module_questions, get_modules},
 };
 
@@ -118,6 +122,7 @@ async fn app_under_test(modules: Arc<dyn ModuleRepository>) -> Router {
     let state = AppState {
         users: MongoUserRepository::new(mongo),
         modules,
+        quiz_attempts: Arc::new(UnavailableQuizAttemptRepository),
     };
 
     Router::new()

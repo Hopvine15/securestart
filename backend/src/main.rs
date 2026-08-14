@@ -27,6 +27,7 @@ mod tests;
 pub struct AppState {
     pub users: repositories::user_repository::MongoUserRepository,
     pub modules: Arc<dyn repositories::module_repository::ModuleRepository>,
+    pub quiz_attempts: Arc<dyn repositories::quiz_attempt_repository::QuizAttemptRepository>,
 }
 
 /// The OpenAPI contract exposed at `/api-docs/openapi.json`.
@@ -79,6 +80,9 @@ async fn main() {
         modules: Arc::new(repositories::module_repository::MongoModuleRepository::new(
             mongo,
         )),
+        quiz_attempts: Arc::new(
+            repositories::quiz_attempt_repository::UnavailableQuizAttemptRepository,
+        ),
     };
 
     let addr: SocketAddr = format!("0.0.0.0:{port}").parse().expect("valid address");
