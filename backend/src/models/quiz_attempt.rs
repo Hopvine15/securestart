@@ -1,5 +1,6 @@
 use mongodb::bson::{DateTime, oid::ObjectId};
 use serde::{Deserialize, Serialize};
+use utoipa::ToSchema;
 
 /// A completed quiz attempt retained for a learner.
 ///
@@ -15,14 +16,19 @@ pub struct QuizAttempt {
     pub completed_at: DateTime,
 }
 
-#[derive(Clone, Debug, Deserialize)]
+#[derive(Clone, Debug, Deserialize, ToSchema)]
 pub struct QuizAttemptRequest {
     pub module_id: String,
     pub answers: Vec<SubmittedAnswer>,
 }
 
-#[derive(Clone, Debug, Deserialize)]
+#[derive(Clone, Debug, Deserialize, ToSchema)]
 pub struct SubmittedAnswer {
     pub question_id: String,
     pub selected_answer: String,
+}
+
+#[derive(Clone, Debug, Serialize, ToSchema)]
+pub struct QuizAttemptResult {
+    pub score: u8,
 }

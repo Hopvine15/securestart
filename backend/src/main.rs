@@ -1,7 +1,10 @@
 use axum::{
     Router,
-    http::{HeaderValue, Method, header::AUTHORIZATION},
-    routing::get,
+    http::{
+        HeaderValue, Method,
+        header::{AUTHORIZATION, CONTENT_TYPE},
+    },
+    routing::{get, post},
 };
 use std::{net::SocketAddr, sync::Arc};
 use tower_http::cors::CorsLayer;
@@ -37,11 +40,13 @@ pub struct AppState {
         routes::auth_test::auth_test,
         routes::modules::get_modules,
         routes::modules::get_module_by_id,
-        routes::modules::get_module_questions
+        routes::modules::get_module_questions,
+        routes::quiz_attempts::create_quiz_attempt
     ),
     tags(
         (name = "Authentication", description = "Endpoints that require an Auth0 bearer token"),
-        (name = "Training Modules", description = "Available cybersecurity training modules")
+        (name = "Training Modules", description = "Available cybersecurity training modules"),
+        (name = "Quiz Attempts", description = "Scored quiz submissions")
     ),
     modifiers(&SecurityAddon)
 )]
@@ -78,10 +83,10 @@ async fn main() {
     let state = AppState {
         users: repositories::user_repository::MongoUserRepository::new(mongo.clone()),
         modules: Arc::new(repositories::module_repository::MongoModuleRepository::new(
-            mongo,
+            mongo.clone(),
         )),
         quiz_attempts: Arc::new(
-            repositories::quiz_attempt_repository::UnavailableQuizAttemptRepository,
+            repositories::quiz_attempt_repository::MongoQuizAttemptRepository::new(mongo.clone()),
         ),
     };
 
@@ -93,8 +98,8 @@ async fn main() {
                 .parse::<HeaderValue>()
                 .expect("valid CORS origin"),
         )
-        .allow_methods([Method::GET])
-        .allow_headers([AUTHORIZATION]);
+        .allow_methods([Method::GET, Method::POST])
+        .allow_headers([AUTHORIZATION, CONTENT_TYPE]);
 
     let app = Router::new()
         .route("/health", get(|| async { "ok" }))
@@ -104,6 +109,10 @@ async fn main() {
         .route(
             "/api/modules/{id}/questions",
             get(routes::modules::get_module_questions),
+        )
+        .route(
+            "/api/quiz-attempts",
+            post(routes::quiz_attempts::create_quiz_attempt),
         )
         .merge(SwaggerUi::new("/swagger-ui").url("/api-docs/openapi.json", ApiDoc::openapi()))
         .layer(cors)

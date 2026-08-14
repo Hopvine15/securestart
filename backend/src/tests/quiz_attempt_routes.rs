@@ -7,7 +7,7 @@ use axum::{
     Router,
     body::Body,
     http::{Request, StatusCode, header},
-    routing::get,
+    routing::{get, post},
 };
 use mongodb::bson::DateTime;
 use serde_json::{Value, json};
@@ -23,7 +23,10 @@ use crate::{
         module_repository::ModuleRepository, quiz_attempt_repository::QuizAttemptRepository,
         user_repository::MongoUserRepository,
     },
-    routes::modules::{get_module_by_id, get_module_questions, get_modules},
+    routes::{
+        modules::{get_module_by_id, get_module_questions, get_modules},
+        quiz_attempts::create_quiz_attempt,
+    },
 };
 
 /// Route-test double for the module lookup needed to validate an attempt.
@@ -170,6 +173,7 @@ async fn app_under_test(
         .route("/api/modules", get(get_modules))
         .route("/api/modules/{id}", get(get_module_by_id))
         .route("/api/modules/{id}/questions", get(get_module_questions))
+        .route("/api/quiz-attempts", post(create_quiz_attempt))
         .with_state(state)
 }
 
