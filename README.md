@@ -316,6 +316,8 @@ The API routes exercised by the automated tests have the following line coverage
 
 The user-provisioning route tests cover first login, repeat login without a duplicate user, unauthenticated rejection before storage access, and sanitised repository errors. This keeps the coverage focus on security-sensitive and user-visible behaviour while the live infrastructure path is verified separately during deployment.
 
+The [CI workflow](./.github/workflows/ci.yml) runs these coverage checks, frontend linting and production builds for both applications on every push and pull request targeting `main`.
+
 ## Repository structure
 
 ```text
