@@ -47,7 +47,7 @@ export default function ProductHeader({ active }: ProductHeaderProps) {
         </Link>
         <Link
           className={`inline-flex items-center gap-2 rounded-xl px-3 py-2 text-sm font-medium text-steel no-underline transition-colors hover:bg-white/10 hover:text-white md:px-4 md:py-2.5 ${active === "training" ? "bg-white/10 font-semibold text-white" : ""}`}
-          to="/training"
+          to="/mytraining"
         >
           <BookOpen aria-hidden="true" className="size-4" />
           My training

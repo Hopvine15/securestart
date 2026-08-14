@@ -37,15 +37,36 @@ const modules = [
   },
 ];
 
-const completedProgress = {
+const progressWithRetakeRequired = {
   completed_modules: [
     {
       module_id: "ai-phishing-risks",
       best_score: 80,
       completed_at: { $date: { $numberLong: "1000" } },
     },
+    {
+      module_id: "password-hygiene",
+      best_score: 50,
+      completed_at: { $date: { $numberLong: "2000" } },
+    },
   ],
-  completed_count: 1,
+  completed_count: 2,
+};
+
+const progressAfterSuccessfulRetake = {
+  completed_modules: [
+    {
+      module_id: "ai-phishing-risks",
+      best_score: 80,
+      completed_at: { $date: { $numberLong: "1000" } },
+    },
+    {
+      module_id: "password-hygiene",
+      best_score: 90,
+      completed_at: { $date: { $numberLong: "3000" } },
+    },
+  ],
+  completed_count: 2,
 };
 
 const getAccessTokenSilently = vi.fn();
@@ -72,7 +93,7 @@ describe("Dashboard progress", () => {
       }
 
       if (url.endsWith("/api/progress")) {
-        return Promise.resolve({ ok: true, json: async () => completedProgress });
+        return Promise.resolve({ ok: true, json: async () => progressWithRetakeRequired });
       }
 
       return Promise.reject(new Error(`Unexpected request: ${url}`));
@@ -123,17 +144,45 @@ describe("Dashboard progress", () => {
   it("leaves modules with no progress record as not started", async () => {
     renderDashboard();
 
-    const unstartedModule = (await screen.findByRole("link", { name: "Password hygiene" })).closest("article");
+    const unstartedModule = (await screen.findByRole("link", { name: "Secure browsing" })).closest("article");
 
     expect(unstartedModule).toHaveTextContent("Not started");
     expect(unstartedModule).not.toHaveTextContent("Best score:");
   });
 
-  it("derives the completed count and percentage from returned progress", async () => {
+  it("marks scores below 80% as requiring a retake rather than completed", async () => {
+    renderDashboard();
+
+    const retakeModule = (await screen.findByRole("link", { name: "Password hygiene" })).closest("article");
+
+    expect(retakeModule).toHaveTextContent("Retake required");
+    expect(retakeModule).toHaveTextContent("Best score: 50%");
+    expect(screen.getByRole("link", { name: "Retake module: Password hygiene" })).toBeInTheDocument();
+  });
+
+  it("counts only modules meeting the 80% pass threshold", async () => {
     renderDashboard();
 
     expect(await screen.findByText("1 of 4 modules complete")).toBeInTheDocument();
     expect(screen.getByText("25%")).toBeInTheDocument();
+  });
+
+  it("marks a later successful retake as completed", async () => {
+    fetchDashboardData.mockImplementation((url: string) => {
+      if (url.endsWith("/api/modules")) {
+        return Promise.resolve({ ok: true, json: async () => modules });
+      }
+
+      return Promise.resolve({ ok: true, json: async () => progressAfterSuccessfulRetake });
+    });
+    renderDashboard();
+
+    const completedRetake = (await screen.findByRole("link", { name: "Password hygiene" })).closest("article");
+
+    expect(completedRetake).toHaveTextContent("Completed");
+    expect(completedRetake).toHaveTextContent("Best score: 90%");
+    expect(screen.getByRole("link", { name: "Review: Password hygiene" })).toBeInTheDocument();
+    expect(screen.getByText("2 of 4 modules complete")).toBeInTheDocument();
   });
 
   it("handles empty progress as no completed modules", async () => {
@@ -150,7 +199,7 @@ describe("Dashboard progress", () => {
     renderDashboard();
 
     expect(await screen.findByText("0 of 4 modules complete")).toBeInTheDocument();
-    expect(screen.getByText("0%")).toBeInTheDocument();
+    expect(screen.getByText("0%", { selector: "strong" })).toBeInTheDocument();
     expect(screen.getAllByText("Not started")).toHaveLength(4);
   });
 
