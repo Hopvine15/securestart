@@ -35,7 +35,8 @@ pub struct AppState {
     paths(
         routes::auth_test::auth_test,
         routes::modules::get_modules,
-        routes::modules::get_module_by_id
+        routes::modules::get_module_by_id,
+        routes::modules::get_module_questions
     ),
     tags(
         (name = "Authentication", description = "Endpoints that require an Auth0 bearer token"),
@@ -96,6 +97,10 @@ async fn main() {
         .route("/api/auth-test", get(routes::auth_test::auth_test))
         .route("/api/modules", get(routes::modules::get_modules))
         .route("/api/modules/{id}", get(routes::modules::get_module_by_id))
+        .route(
+            "/api/modules/{id}/questions",
+            get(routes::modules::get_module_questions),
+        )
         .merge(SwaggerUi::new("/swagger-ui").url("/api-docs/openapi.json", ApiDoc::openapi()))
         .layer(cors)
         .with_state(state);

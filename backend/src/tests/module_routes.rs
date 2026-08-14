@@ -15,7 +15,7 @@ use crate::{
     AppState,
     models::training_module::{QuestionOption, QuizQuestion, TrainingModule},
     repositories::{module_repository::ModuleRepository, user_repository::MongoUserRepository},
-    routes::modules::{get_module_by_id, get_modules},
+    routes::modules::{get_module_by_id, get_module_questions, get_modules},
 };
 
 /// Route-test double for the module repository dependency
@@ -123,6 +123,7 @@ async fn app_under_test(modules: Arc<dyn ModuleRepository>) -> Router {
     Router::new()
         .route("/api/modules", get(get_modules))
         .route("/api/modules/{id}", get(get_module_by_id))
+        .route("/api/modules/{id}/questions", get(get_module_questions))
         .with_state(state)
 }
 
@@ -300,9 +301,6 @@ async fn module_lookup_failures_are_sanitised() {
     assert_eq!(&body[..], b"Database error");
 }
 
-// RED checkpoint for GET /api/modules/:id/questions. The application router
-// does not register this endpoint yet; these tests define its protected,
-// answer-safe contract before the production handler is implemented.
 #[tokio::test]
 async fn authenticated_request_for_a_modules_questions_returns_safe_question_data() {
     let repository = Arc::new(InMemoryModuleRepository::with_modules(modules()));
