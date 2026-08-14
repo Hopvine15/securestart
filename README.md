@@ -9,7 +9,7 @@ SecureStart is a full-stack cybersecurity training application for **NovaShield 
 - **[Interactive mobile prototype](https://www.figma.com/proto/1YWZ73QjdYHnsUwS8r77NQ/SecureStart-Design?node-id=93-1055&starting-point-node-id=93%3A1055&scaling=scale-down&content-scaling=fixed)**
 - **Live application: [securestart.onrender.com](https://securestart.onrender.com/)**
 - **API link: [securestart-api.onrender.com/swagger-ui/#](https://securestart-api.onrender.com/swagger-ui/#/)**
-- **Word count: 2,161 words**
+- **Word count: 2,047 words (excluding headers and tables)**
 
 ## Contents
 
