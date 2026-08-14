@@ -71,9 +71,16 @@ function mockSuccessfulRequests() {
   });
 }
 
-async function answerEveryQuestion(user: ReturnType<typeof userEvent.setup>) {
+async function advanceToFinalQuestion(user: ReturnType<typeof userEvent.setup>) {
   await user.click(await screen.findByRole("radio", { name: questions[0].options[0].text }));
+  await user.click(screen.getByRole("button", { name: "Continue" }));
+  await screen.findByText(questions[1].question);
+}
+
+async function answerAndSubmitQuiz(user: ReturnType<typeof userEvent.setup>) {
+  await advanceToFinalQuestion(user);
   await user.click(screen.getByRole("radio", { name: questions[1].options[0].text }));
+  await user.click(screen.getByRole("button", { name: "Submit quiz" }));
 }
 
 describe("Quiz page", () => {
@@ -96,14 +103,14 @@ describe("Quiz page", () => {
     vi.unstubAllGlobals();
   });
 
-  it("fetches and renders each quiz question with its answer options", async () => {
+  it("fetches all quiz questions and starts the learner on the first question", async () => {
     renderQuiz();
 
     expect(await screen.findByRole("heading", { name: "Quiz" })).toBeInTheDocument();
     expect(screen.getByText(questions[0].question)).toBeInTheDocument();
-    expect(screen.getByText(questions[1].question)).toBeInTheDocument();
     expect(screen.getByRole("radio", { name: questions[0].options[0].text })).toBeInTheDocument();
-    expect(screen.getByRole("radio", { name: questions[1].options[1].text })).toBeInTheDocument();
+    expect(screen.queryByText(questions[1].question)).not.toBeInTheDocument();
+    expect(screen.getByRole("button", { name: "Continue" })).toBeInTheDocument();
   });
 
   it("requests quiz questions with the Auth0 bearer token", async () => {
@@ -119,38 +126,51 @@ describe("Quiz page", () => {
     });
   });
 
-  it("lets a learner select one answer for each question", async () => {
+  it("stores an answer and advances to the next question without submitting", async () => {
     const user = userEvent.setup();
     renderQuiz();
 
-    await answerEveryQuestion(user);
+    await advanceToFinalQuestion(user);
 
-    expect(screen.getByRole("radio", { name: questions[0].options[0].text })).toBeChecked();
-    expect(screen.getByRole("radio", { name: questions[0].options[1].text })).not.toBeChecked();
-    expect(screen.getByRole("radio", { name: questions[1].options[0].text })).toBeChecked();
-  });
-
-  it("flags unanswered questions with accessible text and does not submit an incomplete quiz", async () => {
-    const user = userEvent.setup();
-    renderQuiz();
-
-    await user.click(await screen.findByRole("radio", { name: questions[0].options[0].text }));
-    await user.click(screen.getByRole("button", { name: "Submit quiz" }));
-
-    expect(screen.getByRole("alert")).toHaveTextContent("Please answer every question before submitting.");
-    expect(screen.getByText("Please select an answer before submitting.")).toBeInTheDocument();
+    expect(screen.getByText(questions[1].question)).toBeInTheDocument();
+    expect(screen.getByRole("button", { name: "Submit quiz" })).toBeInTheDocument();
     expect(fetchApi).not.toHaveBeenCalledWith(
       attemptsUrl,
       expect.objectContaining({ method: "POST" }),
     );
   });
 
+  it("requires an answer before moving to the next question", async () => {
+    const user = userEvent.setup();
+    renderQuiz();
+
+    await screen.findByText(questions[0].question);
+    await user.click(screen.getByRole("button", { name: "Continue" }));
+
+    expect(screen.getByRole("alert")).toHaveTextContent("Select an answer before continuing.");
+    expect(screen.getByText(questions[0].question)).toBeInTheDocument();
+    expect(fetchApi).not.toHaveBeenCalledWith(
+      attemptsUrl,
+      expect.objectContaining({ method: "POST" }),
+    );
+  });
+
+  it("returns to a previous question with its selected answer preserved", async () => {
+    const user = userEvent.setup();
+    renderQuiz();
+
+    await advanceToFinalQuestion(user);
+    await user.click(screen.getByRole("button", { name: "Previous question" }));
+
+    expect(await screen.findByText(questions[0].question)).toBeInTheDocument();
+    expect(screen.getByRole("radio", { name: questions[0].options[0].text })).toBeChecked();
+  });
+
   it("submits every selected answer for the current module", async () => {
     const user = userEvent.setup();
     renderQuiz();
 
-    await answerEveryQuestion(user);
-    await user.click(screen.getByRole("button", { name: "Submit quiz" }));
+    await answerAndSubmitQuiz(user);
 
     await waitFor(() => {
       expect(fetchApi).toHaveBeenCalledWith(
@@ -173,8 +193,7 @@ describe("Quiz page", () => {
     const user = userEvent.setup();
     renderQuiz();
 
-    await answerEveryQuestion(user);
-    await user.click(screen.getByRole("button", { name: "Submit quiz" }));
+    await answerAndSubmitQuiz(user);
 
     await waitFor(() => {
       expect(fetchApi).toHaveBeenCalledWith(
@@ -193,8 +212,7 @@ describe("Quiz page", () => {
     const user = userEvent.setup();
     renderQuiz();
 
-    await answerEveryQuestion(user);
-    await user.click(screen.getByRole("button", { name: "Submit quiz" }));
+    await answerAndSubmitQuiz(user);
 
     await waitFor(() => {
       expect(screen.getByTestId("location")).toHaveTextContent(`/modules/${moduleId}/results`);
@@ -219,8 +237,7 @@ describe("Quiz page", () => {
     });
     renderQuiz();
 
-    await answerEveryQuestion(user);
-    await user.click(screen.getByRole("button", { name: "Submit quiz" }));
+    await answerAndSubmitQuiz(user);
 
     expect(await screen.findByRole("alert")).toHaveTextContent("Unable to submit quiz. Please try again.");
   });
