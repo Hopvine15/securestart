@@ -1,7 +1,10 @@
 use axum::{
     Router,
-    http::{HeaderValue, Method, header::AUTHORIZATION},
-    routing::get,
+    http::{
+        HeaderValue, Method,
+        header::{AUTHORIZATION, CONTENT_TYPE},
+    },
+    routing::{get, post},
 };
 use std::{net::SocketAddr, sync::Arc};
 use tower_http::cors::CorsLayer;
@@ -27,6 +30,7 @@ mod tests;
 pub struct AppState {
     pub users: repositories::user_repository::MongoUserRepository,
     pub modules: Arc<dyn repositories::module_repository::ModuleRepository>,
+    pub quiz_attempts: Arc<dyn repositories::quiz_attempt_repository::QuizAttemptRepository>,
 }
 
 /// The OpenAPI contract exposed at `/api-docs/openapi.json`.
@@ -35,11 +39,14 @@ pub struct AppState {
     paths(
         routes::auth_test::auth_test,
         routes::modules::get_modules,
-        routes::modules::get_module_by_id
+        routes::modules::get_module_by_id,
+        routes::modules::get_module_questions,
+        routes::quiz_attempts::create_quiz_attempt
     ),
     tags(
         (name = "Authentication", description = "Endpoints that require an Auth0 bearer token"),
-        (name = "Training Modules", description = "Available cybersecurity training modules")
+        (name = "Training Modules", description = "Available cybersecurity training modules"),
+        (name = "Quiz Attempts", description = "Scored quiz submissions")
     ),
     modifiers(&SecurityAddon)
 )]
@@ -76,8 +83,11 @@ async fn main() {
     let state = AppState {
         users: repositories::user_repository::MongoUserRepository::new(mongo.clone()),
         modules: Arc::new(repositories::module_repository::MongoModuleRepository::new(
-            mongo,
+            mongo.clone(),
         )),
+        quiz_attempts: Arc::new(
+            repositories::quiz_attempt_repository::MongoQuizAttemptRepository::new(mongo.clone()),
+        ),
     };
 
     let addr: SocketAddr = format!("0.0.0.0:{port}").parse().expect("valid address");
@@ -88,14 +98,22 @@ async fn main() {
                 .parse::<HeaderValue>()
                 .expect("valid CORS origin"),
         )
-        .allow_methods([Method::GET])
-        .allow_headers([AUTHORIZATION]);
+        .allow_methods([Method::GET, Method::POST])
+        .allow_headers([AUTHORIZATION, CONTENT_TYPE]);
 
     let app = Router::new()
         .route("/health", get(|| async { "ok" }))
         .route("/api/auth-test", get(routes::auth_test::auth_test))
         .route("/api/modules", get(routes::modules::get_modules))
         .route("/api/modules/{id}", get(routes::modules::get_module_by_id))
+        .route(
+            "/api/modules/{id}/questions",
+            get(routes::modules::get_module_questions),
+        )
+        .route(
+            "/api/quiz-attempts",
+            post(routes::quiz_attempts::create_quiz_attempt),
+        )
         .merge(SwaggerUi::new("/swagger-ui").url("/api-docs/openapi.json", ApiDoc::openapi()))
         .layer(cors)
         .with_state(state);
