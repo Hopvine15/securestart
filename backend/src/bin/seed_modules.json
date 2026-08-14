@@ -1,0 +1,422 @@
+[
+  {
+    "id": "ai-phishing-risks",
+    "title": "AI Phishing Risks",
+    "description": "Spot convincing phishing messages made more persuasive with AI.",
+    "estimated_minutes": 10,
+    "learning_objective": "Identify common signs of AI-assisted phishing and safely verify suspicious requests.",
+    "content": "AI can help attackers create convincing phishing emails, chat messages and fake websites quickly. Messages may use correct grammar, realistic branding and personalised information gathered from public sources. This means poor spelling is no longer a reliable way to identify phishing.\n\nInstead, consider the context of the request. Be cautious of unexpected messages that create urgency, ask you to sign in through an unfamiliar link, request sensitive information or pressure you to bypass a normal process. Check the sender address carefully and consider whether the request is normal for that person or organisation.\n\nIf you are unsure, pause before taking action. Verify important requests through a trusted channel you already know, such as contacting the person directly or navigating to an official website yourself. Do not provide passwords or verification codes. Suspicious messages should be reported through your organisation's security process so they can be investigated.",
+    "questions": [
+      {
+        "id": "phishing-urgent-request",
+        "question": "You receive an urgent message from someone claiming to be a manager asking you to make an unusual payment. What should you do first?",
+        "options": [
+          {
+            "id": "verify",
+            "text": "Verify the request with the manager through a trusted channel before acting."
+          },
+          {
+            "id": "respond",
+            "text": "Respond immediately because the message appears urgent."
+          },
+          {
+            "id": "complete",
+            "text": "Complete the payment first and confirm it afterwards."
+          }
+        ],
+        "correct_answer": "verify"
+      },
+      {
+        "id": "phishing-polished-message",
+        "question": "A message has perfect spelling, correct branding and a professional tone. Does this prove it is genuine?",
+        "options": [
+          {
+            "id": "no",
+            "text": "No. AI can help attackers create polished and convincing messages."
+          },
+          {
+            "id": "yes",
+            "text": "Yes. Phishing messages normally contain obvious spelling mistakes."
+          },
+          {
+            "id": "branding",
+            "text": "Yes, as long as the company logo looks correct."
+          }
+        ],
+        "correct_answer": "no"
+      },
+      {
+        "id": "phishing-login-link",
+        "question": "An unexpected email asks you to sign in using a link to resolve an account problem. What is the safest approach?",
+        "options": [
+          {
+            "id": "navigate",
+            "text": "Navigate to the organisation's known website yourself instead of using the link."
+          },
+          {
+            "id": "open",
+            "text": "Open the link and check whether the page looks genuine."
+          },
+          {
+            "id": "reply",
+            "text": "Reply to the email and ask whether the link is safe."
+          }
+        ],
+        "correct_answer": "navigate"
+      },
+      {
+        "id": "phishing-verification-code",
+        "question": "Someone claiming to be IT support asks you to send them a multi-factor authentication code. What should you do?",
+        "options": [
+          {
+            "id": "refuse",
+            "text": "Do not share the code and verify the request through the official support process."
+          },
+          {
+            "id": "share",
+            "text": "Share the code because IT staff need it to access your account."
+          },
+          {
+            "id": "temporary",
+            "text": "Share it only if they promise to use it once."
+          }
+        ],
+        "correct_answer": "refuse"
+      },
+      {
+        "id": "phishing-report",
+        "question": "What should you do after identifying a suspicious message?",
+        "options": [
+          {
+            "id": "report",
+            "text": "Report it through the organisation's security process."
+          },
+          {
+            "id": "ignore",
+            "text": "Delete it without telling anyone."
+          },
+          {
+            "id": "forward",
+            "text": "Forward it to colleagues so they can decide whether it is genuine."
+          }
+        ],
+        "correct_answer": "report"
+      }
+    ]
+  },
+  {
+    "id": "secure-ai-assisted-coding",
+    "title": "Secure AI-Assisted Coding",
+    "description": "Review AI-generated code before it reaches your project.",
+    "estimated_minutes": 10,
+    "learning_objective": "Review AI-generated code for common security risks before it is committed or deployed.",
+    "content": "AI coding assistants can speed up development, but generated code should be treated as a draft rather than trusted source code. A response can look convincing and still contain insecure logic, outdated techniques or assumptions that do not match the application's security requirements.\n\nReview AI-generated code in the same way you would review code written by another developer. Pay particular attention to authentication and authorisation, input validation, error handling, secrets and database queries. Generated code may also suggest packages or dependencies that are outdated, unnecessary or unsuitable for the project.\n\nBefore committing generated code, understand what it does, verify any dependencies and run the project's normal tests and security checks. Credentials and API keys should never be hard-coded into source code. AI assistance can support development, but responsibility for the security and correctness of the final implementation remains with the developer and the team's review process.",
+    "questions": [
+      {
+        "id": "coding-ai-output",
+        "question": "How should AI-generated code be treated before it is added to a project?",
+        "options": [
+          {
+            "id": "review",
+            "text": "Treat it as a draft and review, understand and test it before use."
+          },
+          {
+            "id": "trust",
+            "text": "Assume it is safe because it was generated by an AI tool."
+          },
+          {
+            "id": "commit",
+            "text": "Commit it immediately and review it after deployment."
+          }
+        ],
+        "correct_answer": "review"
+      },
+      {
+        "id": "coding-input-validation",
+        "question": "AI generates an API endpoint that inserts user input directly into a database query. What should you do?",
+        "options": [
+          {
+            "id": "validate",
+            "text": "Review and change the implementation to safely validate and handle untrusted input."
+          },
+          {
+            "id": "accept",
+            "text": "Use it because generated database code is already validated."
+          },
+          {
+            "id": "format",
+            "text": "Only reformat the code before committing it."
+          }
+        ],
+        "correct_answer": "validate"
+      },
+      {
+        "id": "coding-secrets",
+        "question": "Generated code contains an API key directly in the source file. What is the correct response?",
+        "options": [
+          {
+            "id": "environment",
+            "text": "Remove the key from the source and use the project's approved secret or environment configuration."
+          },
+          {
+            "id": "commit",
+            "text": "Commit it because private repositories are completely secure."
+          },
+          {
+            "id": "comment",
+            "text": "Leave the key in the file but add a comment warning developers not to share it."
+          }
+        ],
+        "correct_answer": "environment"
+      },
+      {
+        "id": "coding-dependency",
+        "question": "An AI assistant recommends an unfamiliar package. What should you do before installing it?",
+        "options": [
+          {
+            "id": "verify",
+            "text": "Verify that the package exists, is appropriate and is maintained before adding it."
+          },
+          {
+            "id": "install",
+            "text": "Install it because the AI assistant recommended it."
+          },
+          {
+            "id": "ignore-version",
+            "text": "Install any version because dependency versions do not affect security."
+          }
+        ],
+        "correct_answer": "verify"
+      },
+      {
+        "id": "coding-responsibility",
+        "question": "Who is responsible for checking the security of AI-generated code used in a project?",
+        "options": [
+          {
+            "id": "developer",
+            "text": "The developer and team using the code remain responsible for reviewing it."
+          },
+          {
+            "id": "ai",
+            "text": "The AI provider is responsible because it generated the code."
+          },
+          {
+            "id": "nobody",
+            "text": "No additional review is needed if automated tests pass."
+          }
+        ],
+        "correct_answer": "developer"
+      }
+    ]
+  },
+  {
+    "id": "protecting-sensitive-data-with-ai",
+    "title": "Protecting Sensitive Data When Using AI",
+    "description": "Keep customer, company and personal data out of unsafe prompts.",
+    "estimated_minutes": 8,
+    "learning_objective": "Recognise sensitive data and use approved AI tools without exposing confidential information.",
+    "content": "Information entered into an AI tool may be processed or stored outside your organisation, depending on the service and configuration being used. This makes it important to understand what information is being shared before placing it into a prompt.\n\nSensitive information can include passwords, API keys, customer records, personal information, confidential business data and internal source code. Do not place this information into an unapproved AI service simply because it would make the prompt more detailed. Follow your organisation's data-handling and approved-tool policies instead.\n\nUse the minimum information needed to complete the task. Where appropriate, remove names, account details and other identifying information or replace real data with fictional examples. If sensitive information is accidentally disclosed, report the incident through the appropriate process rather than assuming that deleting the conversation has removed the risk.",
+    "questions": [
+      {
+        "id": "data-sensitive-information",
+        "question": "Which information should not be pasted into an unapproved AI tool?",
+        "options": [
+          {
+            "id": "sensitive",
+            "text": "Passwords, API keys, customer records and confidential information."
+          },
+          {
+            "id": "public",
+            "text": "Information already intentionally published on the organisation's public website."
+          },
+          {
+            "id": "fictional",
+            "text": "Fictional example data created specifically for testing."
+          }
+        ],
+        "correct_answer": "sensitive"
+      },
+      {
+        "id": "data-customer-example",
+        "question": "You want AI assistance with a customer issue. What is the safest approach?",
+        "options": [
+          {
+            "id": "minimise",
+            "text": "Use an approved tool and remove unnecessary identifying information from the prompt."
+          },
+          {
+            "id": "full-record",
+            "text": "Paste the complete customer record so the AI has maximum context."
+          },
+          {
+            "id": "personal-tool",
+            "text": "Use a personal AI account because it is separate from the company."
+          }
+        ],
+        "correct_answer": "minimise"
+      },
+      {
+        "id": "data-api-key",
+        "question": "An AI assistant asks for your real API key so it can debug an example. What should you do?",
+        "options": [
+          {
+            "id": "placeholder",
+            "text": "Use a placeholder or sanitised example instead of sharing the real credential."
+          },
+          {
+            "id": "provide",
+            "text": "Provide the key because it is required for accurate debugging."
+          },
+          {
+            "id": "partial",
+            "text": "Provide most of the key but remove the final character."
+          }
+        ],
+        "correct_answer": "placeholder"
+      },
+      {
+        "id": "data-minimisation",
+        "question": "What does data minimisation mean when preparing an AI prompt?",
+        "options": [
+          {
+            "id": "minimum",
+            "text": "Only provide the information necessary for the task."
+          },
+          {
+            "id": "maximum",
+            "text": "Provide as much organisational data as possible to improve the response."
+          },
+          {
+            "id": "storage",
+            "text": "Save a copy of every prompt before sending it."
+          }
+        ],
+        "correct_answer": "minimum"
+      },
+      {
+        "id": "data-accidental-disclosure",
+        "question": "You accidentally paste confidential information into an AI tool. What should you do?",
+        "options": [
+          {
+            "id": "report",
+            "text": "Report the incident through the organisation's appropriate security or data process."
+          },
+          {
+            "id": "delete",
+            "text": "Delete the conversation and assume no further action is needed."
+          },
+          {
+            "id": "ignore",
+            "text": "Ignore it if the AI did not mention the confidential information in its response."
+          }
+        ],
+        "correct_answer": "report"
+      }
+    ]
+  },
+  {
+    "id": "authentication-and-password-security",
+    "title": "Authentication and Password Security",
+    "description": "Use strong sign-in habits to protect your work accounts.",
+    "estimated_minutes": 8,
+    "learning_objective": "Use strong authentication habits to protect work accounts and respond safely to suspicious sign-in activity.",
+    "content": "Passwords remain an important part of account security. Reusing the same password across services means that one compromised account can put several others at risk. A password manager can generate and store strong, unique passwords so users do not need to remember each one themselves.\n\nMulti-factor authentication adds another layer of protection by requiring an additional verification step. However, attackers may send repeated authentication prompts or impersonate support staff in an attempt to persuade a user to approve access. Never share passwords or verification codes, and do not approve an authentication request you did not initiate.\n\nUnexpected sign-in alerts, password-reset messages or MFA prompts should be treated seriously. Deny requests you do not recognise and report suspicious activity through the appropriate process. If you believe a password has been compromised, change it promptly and follow your organisation's account-security guidance.",
+    "questions": [
+      {
+        "id": "auth-password-practice",
+        "question": "What is a good password security practice?",
+        "options": [
+          {
+            "id": "manager",
+            "text": "Use a password manager to create and store unique passwords."
+          },
+          {
+            "id": "reuse",
+            "text": "Reuse one strong password across several work accounts."
+          },
+          {
+            "id": "share",
+            "text": "Share passwords with trusted colleagues when they need access."
+          }
+        ],
+        "correct_answer": "manager"
+      },
+      {
+        "id": "auth-mfa-prompt",
+        "question": "You receive an MFA approval request when you are not trying to sign in. What should you do?",
+        "options": [
+          {
+            "id": "deny",
+            "text": "Deny the request and report the unexpected sign-in activity."
+          },
+          {
+            "id": "approve",
+            "text": "Approve it in case one of your applications generated it."
+          },
+          {
+            "id": "repeat",
+            "text": "Wait for another prompt and approve that one instead."
+          }
+        ],
+        "correct_answer": "deny"
+      },
+      {
+        "id": "auth-verification-code",
+        "question": "Someone claiming to be technical support asks for the verification code sent to your phone. What should you do?",
+        "options": [
+          {
+            "id": "never-share",
+            "text": "Do not share the code and contact support through an official channel if needed."
+          },
+          {
+            "id": "share",
+            "text": "Share the code because support staff need it to verify your identity."
+          },
+          {
+            "id": "ask-name",
+            "text": "Share it after asking the support person for their name."
+          }
+        ],
+        "correct_answer": "never-share"
+      },
+      {
+        "id": "auth-compromised-password",
+        "question": "What should you do if you believe your work password has been compromised?",
+        "options": [
+          {
+            "id": "change-report",
+            "text": "Change it promptly and follow the organisation's security reporting process."
+          },
+          {
+            "id": "wait",
+            "text": "Wait until the system forces you to change it."
+          },
+          {
+            "id": "similar",
+            "text": "Change one character so the new password is easier to remember."
+          }
+        ],
+        "correct_answer": "change-report"
+      },
+      {
+        "id": "auth-password-manager-benefit",
+        "question": "Why is a password manager useful?",
+        "options": [
+          {
+            "id": "unique",
+            "text": "It helps users maintain different strong passwords for different accounts."
+          },
+          {
+            "id": "share",
+            "text": "It automatically shares passwords with colleagues who need them."
+          },
+          {
+            "id": "remove-mfa",
+            "text": "It removes the need to use multi-factor authentication."
+          }
+        ],
+        "correct_answer": "unique"
+      }
+    ]
+  }
+]

@@ -100,11 +100,13 @@ function ModuleDetail() {
             </BaseCard>
 
             <BaseCard as="article" className="mt-5">
-              <p className="mb-1 text-xs font-bold uppercase tracking-widest text-cyan-dark">Module content</p>
-              <div className="max-w-prose space-y-4 text-base text-ink">
-                {module.content.split("\n\n").map((paragraph, index) => (
-                  <p key={`${module.id}-${index}`}>{paragraph}</p>
-                ))}
+              <div className="mx-auto max-w-4xl">
+                <p className="mb-1 text-xs font-bold uppercase tracking-widest text-cyan-dark">Module content</p>
+                <div className="space-y-4 text-base text-ink">
+                  {module.content.split("\n\n").map((paragraph, index) => (
+                    <p key={`${module.id}-${index}`}>{paragraph}</p>
+                  ))}
+                </div>
               </div>
               <div className="mt-8 border-t border-border pt-6">
                 <p className="mb-3 text-sm text-muted">Ready to check what you learned?</p>
